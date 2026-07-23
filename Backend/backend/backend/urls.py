@@ -31,12 +31,12 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),  # login/logout pour Browsable API
 
     path('api/', include('core.urls')),
-    #path('api/', include('interventions.urls')),
+    path('api/', include('interventions.urls')),
     #path('api/', include('dashboard.urls')),
     # ⬇ décommente au fur et à mesure que tu crées les urls.py de chaque app
     path('api/', include('parcels.urls')),
-    #path('api/', include('palms.urls')),
-    # path('api/', include('notifications.urls')),
+    path('api/', include('palms.urls')),
+    path('api/', include('notifications.urls')),
     # path('api/', include('remote_sensing.urls')),
     # path('api/', include('ai_predictions.urls')),
     # path('api/', include('reports.urls')),

@@ -20,8 +20,8 @@ class Parcelle(BaseModel):
         choices=Statut.choices,
         default=Statut.ACTIVE,
     )
-    proprietaire = models.CharField(max_length=150, blank=True)
-    description = models.TextField(blank=True)
+    proprietaire = models.CharField(max_length=150, blank=True, default="")
+    description = models.TextField(blank=True, default="")
 
     # Calculés automatiquement à chaque sauvegarde (voir save() ci-dessous)
     superficie_m2 = models.FloatField(editable=False, null=True, blank=True)
