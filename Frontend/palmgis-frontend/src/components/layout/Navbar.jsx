@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import useMapStore from "../../store/mapStore";
+import NotificationBadge from "../notifications/NotificationBadge";
+
 
 export default function Navbar() {
   const navigate  = useNavigate();
@@ -55,6 +57,7 @@ export default function Navbar() {
       </div>
 
       {/* Centre — navigation */}
+    
       <div className="hidden md:flex items-center gap-1">
         <NavLink onClick={() => navigate("/map")}>
           🗺️ Carte
@@ -62,13 +65,14 @@ export default function Navbar() {
         <NavLink onClick={() => navigate("/interventions")}>
           📋 Interventions
         </NavLink>
-        <NavLink onClick={() => navigate("/notifications")}>
-          🔔 Notifications
-        </NavLink>
+        {/* ⚠️ PAS de NavLink autour de NotificationBadge */}
       </div>
 
-      {/* Droite — utilisateur + déconnexion */}
+      {/* Droite — utilisateur + notifications + déconnexion */}
       <div className="flex items-center gap-3">
+
+        {/* NotificationBadge directement ici, pas dans un NavLink */}
+        <NotificationBadge />
 
         {/* Infos utilisateur */}
         <div className="text-right hidden sm:block">
@@ -93,11 +97,10 @@ export default function Navbar() {
         <button
           onClick={handleLogout}
           className="text-xs bg-primary-600 hover:bg-primary-700
-                     px-3 py-1.5 rounded-lg transition font-medium"
+                    px-3 py-1.5 rounded-lg transition font-medium"
         >
           Déconnexion
         </button>
-
       </div>
     </nav>
   );
