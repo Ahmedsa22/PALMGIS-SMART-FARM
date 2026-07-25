@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import Navbar from "../components/layout/Navbar";
 import MapContainer from "../components/map/MapContainer";
 import useMapStore from "../store/mapStore";
 import useAuthStore from "../store/authStore";
+import InterventionForm from "../components/interventions/InterventionForm";
+import InterventionList from "../components/interventions/InterventionList";
 
 export default function MapPage() {
   const sidebarOuverte = useMapStore((state) => state.sidebarOuverte);
@@ -61,6 +64,37 @@ function SidebarContent() {
   );
   const user = useAuthStore((state) => state.user);
 
+  const [showForm, setShowForm] = useState(false);
+  const [showHistorique, setShowHistorique] = useState(false); 
+
+  // Reset formulaire quand on change de sélection
+  useEffect(() => {
+    setShowForm(false);
+    setShowHistorique(false); 
+  }, [parcelleSelectionnee, palmSelectionne]);
+
+  // ─── Formulaire d'intervention ───
+  if (showForm) {
+    return (
+      <InterventionForm
+        parcelle={parcelleSelectionnee}
+        palm={palmSelectionne}
+        onSuccess={() => setShowForm(false)}
+        onCancel={() => setShowForm(false)}
+      />
+    );
+  }
+  
+  // ─── Historique des interventions ───
+  if (showHistorique) {
+    return (
+      <InterventionList
+        parcelle={parcelleSelectionnee}
+        palm={palmSelectionne}
+        onClose={() => setShowHistorique(false)}
+      />
+    );
+  }
   // ─── Vue 3 — Palmier sélectionné ───
   if (palmSelectionne) {
     const p = palmSelectionne.properties;
@@ -123,17 +157,32 @@ function SidebarContent() {
           ))}
         </div>
 
-        {/* Bouton historique — managers seulement */}
+        {/* Boutons — managers seulement */}
         {user?.role === "manager" && (
-          <button style={{
-            marginTop: "1rem", width: "100%",
-            padding: "0.6rem", borderRadius: "0.5rem",
-            backgroundColor: "#2E5E3E", color: "white",
-            border: "none", cursor: "pointer",
-            fontSize: "0.85rem", fontWeight: 600,
+          <div style={{
+            display: "flex", flexDirection: "column",
+            gap: "0.5rem", marginTop: "1rem"
           }}>
-            📋 Voir les interventions
-          </button>
+            <button
+              onClick={() => setShowForm(true)}
+              style={{
+                padding: "0.6rem", borderRadius: "0.5rem",
+                backgroundColor: "#2E5E3E", color: "white",
+                border: "none", cursor: "pointer",
+                fontSize: "0.85rem", fontWeight: 600,
+              }}
+            >
+              ➕ Nouvelle intervention
+            </button>
+            <button style={{
+              padding: "0.6rem", borderRadius: "0.5rem",
+              backgroundColor: "#f3f4f6", color: "#374151",
+              border: "1px solid #e5e7eb", cursor: "pointer",
+              fontSize: "0.85rem", fontWeight: 600,
+            }} onClick={() => setShowHistorique(true)} >
+              📋 Historique interventions
+            </button>
+          </div>
         )}
       </div>
     );
@@ -170,10 +219,10 @@ function SidebarContent() {
         {/* Infos */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {[
-            { label: "Statut",      value: statut },
-            { label: "Superficie",  value: `${p.superficie_ha} ha` },
-            { label: "Périmètre",   value: `${Math.round(p.perimetre_m)} m` },
-            { label: "Propriétaire",value: p.proprietaire || "—" },
+            { label: "Statut",       value: statut },
+            { label: "Superficie",   value: `${p.superficie_ha} ha` },
+            { label: "Périmètre",    value: `${Math.round(p.perimetre_m)} m` },
+            { label: "Propriétaire", value: p.proprietaire || "—" },
           ].map(({ label, value }) => (
             <div key={label} style={{
               display: "flex", justifyContent: "space-between",
@@ -197,12 +246,15 @@ function SidebarContent() {
             display: "flex", flexDirection: "column",
             gap: "0.5rem", marginTop: "1rem"
           }}>
-            <button style={{
-              padding: "0.6rem", borderRadius: "0.5rem",
-              backgroundColor: "#2E5E3E", color: "white",
-              border: "none", cursor: "pointer",
-              fontSize: "0.85rem", fontWeight: 600,
-            }}>
+            <button
+              onClick={() => setShowForm(true)}
+              style={{
+                padding: "0.6rem", borderRadius: "0.5rem",
+                backgroundColor: "#2E5E3E", color: "white",
+                border: "none", cursor: "pointer",
+                fontSize: "0.85rem", fontWeight: 600,
+              }}
+            >
               ➕ Nouvelle intervention
             </button>
             <button style={{
@@ -210,7 +262,7 @@ function SidebarContent() {
               backgroundColor: "#f3f4f6", color: "#374151",
               border: "1px solid #e5e7eb", cursor: "pointer",
               fontSize: "0.85rem", fontWeight: 600,
-            }}>
+            }} onClick={() => setShowHistorique(true)} >
               📋 Historique
             </button>
           </div>
