@@ -60,13 +60,11 @@ export async function deleteParcelle(id) {
  */
 export async function importParcelles(file, onProgress) {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", file);  // ← clé "file" obligatoire
 
   const response = await api.post("/parcelles/import/", formData, {
     headers: {
-      // On retire Content-Type pour laisser le navigateur générer
-      // automatiquement le bon "boundary" pour multipart/form-data
-      "Content-Type": undefined,
+      "Content-Type": undefined,  // ← laisse le navigateur générer le boundary
     },
     onUploadProgress: (progressEvent) => {
       if (onProgress && progressEvent.total) {
@@ -79,4 +77,5 @@ export async function importParcelles(file, onProgress) {
   });
 
   return response.data;
+  
 }

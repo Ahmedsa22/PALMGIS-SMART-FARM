@@ -5,6 +5,8 @@ import useMapStore from "../store/mapStore";
 import useAuthStore from "../store/authStore";
 import InterventionForm from "../components/interventions/InterventionForm";
 import InterventionList from "../components/interventions/InterventionList";
+import ParcelleImport from "../components/parcelles/ParcelleImport";
+
 
 export default function MapPage() {
   const sidebarOuverte = useMapStore((state) => state.sidebarOuverte);
@@ -66,13 +68,29 @@ function SidebarContent() {
 
   const [showForm, setShowForm] = useState(false);
   const [showHistorique, setShowHistorique] = useState(false); 
+  const [showImport, setShowImport] = useState(false);
+
 
   // Reset formulaire quand on change de sélection
   useEffect(() => {
     setShowForm(false);
     setShowHistorique(false); 
+    setShowImport(false); 
   }, [parcelleSelectionnee, palmSelectionne]);
 
+
+  // ─── Import des parcelles ───
+  if (showImport) {
+  return (
+    <ParcelleImport
+      onSuccess={() => {
+        setShowImport(false);
+        window.location.reload(); // recharge la carte après import
+      }}
+      onCancel={() => setShowImport(false)}
+    />
+  );
+}
   // ─── Formulaire d'intervention ───
   if (showForm) {
     return (
@@ -272,14 +290,32 @@ function SidebarContent() {
   }
 
   // ─── Vue 1 — Rien de sélectionné ───
+  // ─── Vue 1 — Rien de sélectionné ───
   return (
     <div style={{ padding: "1rem" }}>
-      <h2 style={{
-        fontWeight: "bold", color: "#374151",
-        marginBottom: "0.5rem", fontSize: "0.95rem"
+      <div style={{
+        display: "flex", justifyContent: "space-between",
+        alignItems: "center", marginBottom: "0.5rem"
       }}>
-        📋 Parcelles
-      </h2>
+        <h2 style={{
+          fontWeight: "bold", color: "#374151", fontSize: "0.95rem"
+        }}>
+          📋 Parcelles
+        </h2>
+        {user?.role === "manager" && (
+          <button
+            onClick={() => setShowImport(true)}
+            style={{
+              padding: "0.3rem 0.6rem", borderRadius: "0.4rem",
+              backgroundColor: "#2E5E3E", color: "white",
+              border: "none", cursor: "pointer",
+              fontSize: "0.75rem", fontWeight: 600,
+            }}
+          >
+            📂 Importer
+          </button>
+        )}
+      </div>
       <p style={{ fontSize: "0.85rem", color: "#9ca3af" }}>
         Cliquez sur une parcelle sur la carte pour voir ses détails.
       </p>
