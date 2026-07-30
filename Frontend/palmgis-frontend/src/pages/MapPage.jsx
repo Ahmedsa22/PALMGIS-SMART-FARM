@@ -6,10 +6,19 @@ import useAuthStore from "../store/authStore";
 import InterventionForm from "../components/interventions/InterventionForm";
 import InterventionList from "../components/interventions/InterventionList";
 import ParcelleImport from "../components/parcelles/ParcelleImport";
+import MapLegend from "../components/map/MapLegend";
+import ParcelleEditForm from "../components/parcelles/ParcelleEditForm";
+import PalmEditForm from "../components/palms/PalmEditForm";
+import PalmImport from "../components/palms/PalmImport";
+import ParcelleList from "../components/parcelles/ParcelleList";
+
+
 
 
 export default function MapPage() {
   const sidebarOuverte = useMapStore((state) => state.sidebarOuverte);
+  const [legendeVisible, setLegendeVisible] = useState(true);
+
 
   return (
     <div style={{
@@ -50,6 +59,28 @@ export default function MapPage() {
           minWidth: 0,
         }}>
           <MapContainer />
+
+          {/* Bouton flottant pour toggle : */}
+          <button
+            onClick={() => setLegendeVisible(!legendeVisible)}
+            style={{
+              position: "absolute",
+              bottom: "2rem",
+              right: legendeVisible ? "185px" : "0.75rem",
+              backgroundColor: "white",
+              border: "1px solid #e5e7eb",
+              borderRadius: "0.5rem",
+              padding: "0.3rem 0.5rem",
+              cursor: "pointer",
+              zIndex: 11,
+              fontSize: "0.75rem",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              transition: "right 0.3s ease",
+            }}
+          >
+            {legendeVisible ? "◀ Légende" : "▶"}
+          </button>
+          <MapLegend visible={legendeVisible} />
         </main>
 
       </div>
@@ -69,6 +100,9 @@ function SidebarContent() {
   const [showForm, setShowForm] = useState(false);
   const [showHistorique, setShowHistorique] = useState(false); 
   const [showImport, setShowImport] = useState(false);
+  const [showEditParcelle, setShowEditParcelle] = useState(false);  
+  const [showEditPalm, setShowEditPalm]         = useState(false); 
+  const [showImportPalms, setShowImportPalms] = useState(false);
 
 
   // Reset formulaire quand on change de sélection
@@ -76,8 +110,53 @@ function SidebarContent() {
     setShowForm(false);
     setShowHistorique(false); 
     setShowImport(false); 
+    setShowEditParcelle(false);  
+    setShowEditPalm(false); 
+    setShowImportPalms(false);
+
   }, [parcelleSelectionnee, palmSelectionne]);
 
+
+  // ── Formulaire édition parcelle ──
+  if (showEditParcelle) {
+    return (
+      <ParcelleEditForm
+        parcelle={parcelleSelectionnee}
+        onSuccess={() => {
+          setShowEditParcelle(false);
+          window.location.reload(); // recharge la carte
+        }}
+        onCancel={() => setShowEditParcelle(false)}
+      />
+    );
+  }
+
+  // ── Formulaire édition palmier ──
+  if (showEditPalm) {
+    return (
+      <PalmEditForm
+        palm={palmSelectionne}
+        onSuccess={() => {
+          setShowEditPalm(false);
+          window.location.reload(); // recharge la carte
+        }}
+        onCancel={() => setShowEditPalm(false)}
+      />
+    );
+  }
+
+  //
+  if (showImportPalms) {
+  return (
+    <PalmImport
+      onSuccess={() => {
+        setShowImportPalms(false);
+        window.location.reload();
+      }}
+      onCancel={() => setShowImportPalms(false)}
+    />
+  );
+}
 
   // ─── Import des parcelles ───
   if (showImport) {
@@ -132,6 +211,22 @@ function SidebarContent() {
 
     return (
       <div style={{ padding: "1rem" }}>
+        
+
+        <button
+          onClick={() => {
+            useMapStore.getState().reinitialiserSelection();
+          }}
+          style={{
+            display: "flex", alignItems: "center", gap: "0.3rem",
+            background: "none", border: "none",
+            cursor: "pointer", fontSize: "0.78rem",
+            color: "#6b7280", marginBottom: "0.75rem",
+            padding: "0.25rem 0",
+          }}
+        >
+          ← Retour aux parcelles
+      </button>
 
         {/* En-tête */}
         <p style={{
@@ -158,6 +253,10 @@ function SidebarContent() {
             { label: "Âge",            value: age },
             { label: "État sanitaire", value: etatSante },
             { label: "État site",      value: etatSite },
+            ...(p.etat_site === "TOF"
+              ? [{ label: "Nombre de rejets", value: p.nombre_rejets ?? "Non renseigné" }]
+              : []
+            ),
           ].map(({ label, value }) => (
             <div key={label} style={{
               display: "flex", justifyContent: "space-between",
@@ -181,6 +280,15 @@ function SidebarContent() {
             display: "flex", flexDirection: "column",
             gap: "0.5rem", marginTop: "1rem"
           }}>
+            <button onClick={() => setShowEditPalm(true)} style={{
+              padding: "0.6rem", borderRadius: "0.5rem",
+              backgroundColor: "#f0fdf4", color: "#2E5E3E",
+              border: "1px solid #bbf7d0", cursor: "pointer",
+              fontSize: "0.85rem", fontWeight: 600,
+            }}>
+              ✏️ Modifier le palmier
+            </button>
+
             <button
               onClick={() => setShowForm(true)}
               style={{
@@ -218,7 +326,22 @@ function SidebarContent() {
 
     return (
       <div style={{ padding: "1rem" }}>
+        
 
+        <button
+          onClick={() => {
+            useMapStore.getState().reinitialiserSelection();
+          }}
+          style={{
+            display: "flex", alignItems: "center", gap: "0.3rem",
+            background: "none", border: "none",
+            cursor: "pointer", fontSize: "0.78rem",
+            color: "#6b7280", marginBottom: "0.75rem",
+            padding: "0.25rem 0",
+          }}
+        >
+          ← Retour aux parcelles
+      </button>
         {/* En-tête */}
         <p style={{
           fontSize: "0.7rem", color: "#9ca3af",
@@ -264,6 +387,14 @@ function SidebarContent() {
             display: "flex", flexDirection: "column",
             gap: "0.5rem", marginTop: "1rem"
           }}>
+            <button onClick={() => setShowEditParcelle(true)} style={{
+              padding: "0.6rem", borderRadius: "0.5rem",
+              backgroundColor: "#f0fdf4", color: "#2E5E3E",
+              border: "1px solid #bbf7d0", cursor: "pointer",
+              fontSize: "0.85rem", fontWeight: 600,
+            }}>
+              ✏️ Modifier la parcelle
+            </button>
             <button
               onClick={() => setShowForm(true)}
               style={{
@@ -290,35 +421,10 @@ function SidebarContent() {
   }
 
   // ─── Vue 1 — Rien de sélectionné ───
-  // ─── Vue 1 — Rien de sélectionné ───
-  return (
-    <div style={{ padding: "1rem" }}>
-      <div style={{
-        display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "0.5rem"
-      }}>
-        <h2 style={{
-          fontWeight: "bold", color: "#374151", fontSize: "0.95rem"
-        }}>
-          📋 Parcelles
-        </h2>
-        {user?.role === "manager" && (
-          <button
-            onClick={() => setShowImport(true)}
-            style={{
-              padding: "0.3rem 0.6rem", borderRadius: "0.4rem",
-              backgroundColor: "#2E5E3E", color: "white",
-              border: "none", cursor: "pointer",
-              fontSize: "0.75rem", fontWeight: 600,
-            }}
-          >
-            📂 Importer
-          </button>
-        )}
-      </div>
-      <p style={{ fontSize: "0.85rem", color: "#9ca3af" }}>
-        Cliquez sur une parcelle sur la carte pour voir ses détails.
-      </p>
-    </div>
-  );
+return (
+   <ParcelleList
+    onShowImport={() => setShowImport(true)}
+    onShowImportPalms={() => setShowImportPalms(true)}
+  />
+);
 }

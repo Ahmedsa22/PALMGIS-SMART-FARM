@@ -11,7 +11,7 @@ class PalmSerializer(GeoFeatureModelSerializer):
         fields = [
             "id", "parcelle", "age", "etat_site", "etat_sante", "sexe",
             "variete", "ligne", "numero", "code_uni", "code_local",
-            "description", "created_at", "updated_at",
+            "description", "created_at", "updated_at","nombre_rejets",
         ]
         # parcelle est rattachée automatiquement dans Palm.save() via
         # geom__contains (la parcelle qui contient le point) : jamais saisie

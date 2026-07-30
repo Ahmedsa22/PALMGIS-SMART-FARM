@@ -65,6 +65,9 @@ export default function Navbar() {
         <NavLink onClick={() => navigate("/interventions")}>
           📋 Interventions
         </NavLink>
+        <NavLink onClick={() => navigate("/dashboard")}>
+          📊 Dashboard
+        </NavLink>
         {/* ⚠️ PAS de NavLink autour de NotificationBadge */}
       </div>
 

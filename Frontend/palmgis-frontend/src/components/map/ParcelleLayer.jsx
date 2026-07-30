@@ -159,5 +159,25 @@ export default function ParcelleLayer({ map }) {
     };
   }, [map]);
 
+
+  const couchesActives = useMapStore((state) => state.couchesActives);
+
+  useEffect(() => {
+    if (!map || !map.getLayer("parcelles-fill")) return;
+
+    // Pour chaque feature, filtre selon couchesActives
+    if (couchesActives.length === 0) {
+      // Aucune couche active → cache tout
+      map.setFilter("parcelles-fill",     ["==", ["get", "id"], ""]);
+      map.setFilter("parcelles-border",   ["==", ["get", "id"], ""]);
+      map.setFilter("parcelles-selected", ["==", ["get", "id"], -1]);
+    } else {
+      // Affiche uniquement les parcelles dont l'id est dans couchesActives
+      const filtre = ["in", ["get", "id"], ["literal", couchesActives]];
+      map.setFilter("parcelles-fill",   filtre);
+      map.setFilter("parcelles-border", filtre);
+    }
+}, [map, couchesActives]);
+
   return null;
 }

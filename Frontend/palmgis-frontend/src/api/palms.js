@@ -88,3 +88,28 @@ export async function deletePalm(id) {
   const response = await api.delete(`/palms/${id}/`);
   return response.data;
 }
+
+/**
+ * Importe des palmiers depuis un fichier Shapefile (.zip) ou GeoJSON.
+ *
+ * @param {File} file
+ * @param {Function} onProgress
+ */
+export async function importPalms(file, onProgress) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await api.post("/palms/import/", formData, {
+    headers: { "Content-Type": undefined },
+    onUploadProgress: (progressEvent) => {
+      if (onProgress && progressEvent.total) {
+        const percent = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        onProgress(percent);
+      }
+    },
+  });
+
+  return response.data;
+}

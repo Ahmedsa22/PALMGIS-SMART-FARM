@@ -3,12 +3,18 @@ import maplibregl from "maplibre-gl";
 import useMapStore from "../../store/mapStore";
 import ParcelleLayer from "./ParcelleLayer"; 
 import PalmLayer from "./PalmLayer"; 
+import MapFilters from "./MapFilters";
+import MapLegend from "./MapLegend";
+import DrawingToolbox from "./DrawingToolbox";
+
 
 export default function MapContainer() {
   const mapContainerRef = useRef(null);
   const mapRef          = useRef(null);
   const setMapRef       = useMapStore((state) => state.setMapRef);
-  const [mapPret, setMapPret] = useState(false);       // ← ajoute cet état
+  const [mapPret, setMapPret] = useState(false);       
+  const [filtres, setFiltres]     = useState({}); 
+
 
   useEffect(() => {
     if (mapRef.current) return;
@@ -71,13 +77,20 @@ export default function MapContainer() {
           width: "100%", height: "100%",
         }}
       />
-      {/* ← Monte ParcelleLayer seulement quand la carte est prête */}
       {mapPret && mapRef.current && (
         <>
           <ParcelleLayer map={mapRef.current} />
-          <PalmLayer map={mapRef.current} />
+          <PalmLayer
+            map={mapRef.current}
+            filtres={filtres}             
+          />
         </>
       )}
-    </>
+      <MapFilters
+        onFiltresChange={setFiltres}      
+      />
+      <MapLegend visible={true} />
+      <DrawingToolbox map={mapRef.current} />
+  </>
   );
 }

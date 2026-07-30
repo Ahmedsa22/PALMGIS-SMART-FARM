@@ -24,6 +24,14 @@ const useMapStore = create((set) => ({
   // ─────────────────────────────────────────────
   // ACTIONS
   // ─────────────────────────────────────────────
+  couchesActives: [],
+  setCouchesActives: (ids) => set({ couchesActives: ids }),
+  toggleCouche: (parcelleId) =>
+    set((state) => ({
+      couchesActives: state.couchesActives.includes(parcelleId)
+        ? state.couchesActives.filter(id => id !== parcelleId)
+        : [...state.couchesActives, parcelleId],
+    })),
 
   /**
    * Sélectionne une parcelle.

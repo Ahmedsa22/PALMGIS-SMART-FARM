@@ -9,6 +9,8 @@ import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
 import InterventionsPage from "./pages/InterventionsPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import DashboardPage from "./pages/DashboardPage";
+
 
 // Instance React Query — gère le cache de tous les appels API
 const queryClient = new QueryClient({
@@ -63,6 +65,7 @@ export default function App() {
             <Route path="/map"           element={<MapPage />} />
             <Route path="/interventions" element={<InterventionsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
           </Route>
 
           {/* Redirection par défaut */}
