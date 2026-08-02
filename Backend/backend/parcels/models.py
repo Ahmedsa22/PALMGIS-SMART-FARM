@@ -44,3 +44,8 @@ class Parcelle(BaseModel):
     @property
     def superficie_ha(self):
         return round(self.superficie_m2 / 10000, 3) if self.superficie_m2 else None
+
+    @property
+    def superficie_ha(self):
+        """Superficie en hectares."""
+        return round((self.superficie_m2 or 0) / 10000, 2)

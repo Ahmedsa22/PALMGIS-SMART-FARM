@@ -72,12 +72,18 @@ INSTALLED_APPS = [
     "remote_sensing",
     "ai_predictions",
     "dashboard",
-    "reports",
+    "reports_app",
 ]
 
 SITE_ID = 1  # requis par django.contrib.sites
 
 AUTH_USER_MODEL = "core.User"
+
+# Configuration GeoServer
+GEOSERVER_URL = "http://localhost:8080/geoserver"
+GEOSERVER_USER = "admin"
+GEOSERVER_PASSWORD = "geoserver"
+GEOSERVER_WORKSPACE = "palmgis"
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

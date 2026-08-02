@@ -39,7 +39,7 @@ urlpatterns = [
     path('api/', include('notifications.urls')),
     # path('api/', include('remote_sensing.urls')),
     # path('api/', include('ai_predictions.urls')),
-    # path('api/', include('reports.urls')),
+    path("api/reports/", include("reports_app.urls")),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

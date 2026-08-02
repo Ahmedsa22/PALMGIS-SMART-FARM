@@ -50,6 +50,28 @@ export async function deleteParcelle(id) {
   return response.data;
 }
 
+
+
+export async function genererCarte(data) {
+  const response = await api.post("/reports/carte/", data, {
+    responseType: "blob",
+  });
+
+  const url = window.URL.createObjectURL(
+    new Blob([response.data], { type: "application/pdf" })
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute(
+    "download",
+    `carte_${data.parcelle_id}_${Date.now()}.pdf`
+  );
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}
+
 /**
  * Importe des parcelles depuis un fichier Shapefile (.zip) ou GeoJSON.
  * Envoie le fichier en multipart/form-data.

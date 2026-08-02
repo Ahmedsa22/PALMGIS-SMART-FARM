@@ -11,6 +11,8 @@ import ParcelleEditForm from "../components/parcelles/ParcelleEditForm";
 import PalmEditForm from "../components/palms/PalmEditForm";
 import PalmImport from "../components/palms/PalmImport";
 import ParcelleList from "../components/parcelles/ParcelleList";
+import CarteForm from "../components/reports/CarteForm";
+
 
 
 
@@ -103,6 +105,7 @@ function SidebarContent() {
   const [showEditParcelle, setShowEditParcelle] = useState(false);  
   const [showEditPalm, setShowEditPalm]         = useState(false); 
   const [showImportPalms, setShowImportPalms] = useState(false);
+  const [showCarteForm, setShowCarteForm] = useState(false);
 
 
   // Reset formulaire quand on change de sélection
@@ -113,9 +116,39 @@ function SidebarContent() {
     setShowEditParcelle(false);  
     setShowEditPalm(false); 
     setShowImportPalms(false);
+    setShowCarteForm(false);
+
 
   }, [parcelleSelectionnee, palmSelectionne]);
 
+
+
+  // ─── Import des parcelles ───
+  if (showImport) {
+  return (
+    <ParcelleImport
+      onSuccess={() => {
+        setShowImport(false);
+        window.location.reload(); // recharge la carte après import
+      }}
+      onCancel={() => setShowImport(false)}
+    />
+  );
+}
+
+
+  //
+  if (showImportPalms) {
+  return (
+    <PalmImport
+      onSuccess={() => {
+        setShowImportPalms(false);
+        window.location.reload();
+      }}
+      onCancel={() => setShowImportPalms(false)}
+    />
+  );
+}
 
   // ── Formulaire édition parcelle ──
   if (showEditParcelle) {
@@ -145,31 +178,20 @@ function SidebarContent() {
     );
   }
 
-  //
-  if (showImportPalms) {
-  return (
-    <PalmImport
-      onSuccess={() => {
-        setShowImportPalms(false);
-        window.location.reload();
-      }}
-      onCancel={() => setShowImportPalms(false)}
-    />
-  );
-}
 
-  // ─── Import des parcelles ───
-  if (showImport) {
-  return (
-    <ParcelleImport
-      onSuccess={() => {
-        setShowImport(false);
-        window.location.reload(); // recharge la carte après import
-      }}
-      onCancel={() => setShowImport(false)}
-    />
-  );
-}
+
+
+
+ if (showCarteForm) {
+    return (
+      <CarteForm
+        parcelle={parcelleSelectionnee}
+        onCancel={() => setShowCarteForm(false)}
+      />
+    );
+  }
+
+
   // ─── Formulaire d'intervention ───
   if (showForm) {
     return (
@@ -414,11 +436,25 @@ function SidebarContent() {
             }} onClick={() => setShowHistorique(true)} >
               📋 Historique
             </button>
+            <button
+              onClick={() => setShowCarteForm(true)}
+              style={{
+                padding: "0.6rem", borderRadius: "0.5rem",
+                backgroundColor: "#f0fdf4", color: "#2E5E3E",
+                border: "1px solid #bbf7d0", cursor: "pointer",
+                fontSize: "0.85rem", fontWeight: 600,
+              }}
+            >
+              🗺️ Générer carte PDF
+            </button>
           </div>
         )}
       </div>
     );
   }
+
+
+ 
 
   // ─── Vue 1 — Rien de sélectionné ───
 return (
