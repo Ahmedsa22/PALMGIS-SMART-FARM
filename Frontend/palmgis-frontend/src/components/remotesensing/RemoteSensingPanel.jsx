@@ -1,6 +1,13 @@
 import { useState } from "react";
+import {
+  Satellite, BarChart3, X, LandPlot, Search, Download, Calendar, Cloud,
+  Info, AlertTriangle, Loader2,
+} from "lucide-react";
 import api from "../../api/axios";
 import ComparaisonPanel from "./ComparaisonPanel";
+import { theme } from "../../styles/theme";
+import Button from "../ui/Button";
+import { SectionTitle } from "../ui/Badge";
 
 export default function RemoteSensingPanel({ parcelle, onCancel }) {
   const p = parcelle.properties;
@@ -21,11 +28,19 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
   const [error, setError]             = useState(null);
 
   const statutLabel = {
-    en_attente:     "⏳ En attente",
-    telechargement: "📥 Téléchargement...",
-    traitement:     "⚙️ Calcul des indices...",
-    termine:        "✅ Terminé",
-    erreur:         "❌ Erreur",
+    en_attente:     "En attente",
+    telechargement: "Téléchargement...",
+    traitement:     "Calcul des indices...",
+    termine:        "Terminé",
+    erreur:         "Erreur",
+  };
+
+  const statutColor = {
+    en_attente:     theme.colors.info,
+    telechargement: theme.colors.info,
+    traitement:     theme.colors.info,
+    termine:        theme.colors.success,
+    erreur:         theme.colors.danger,
   };
 
   async function handleRechercher(e) {
@@ -94,78 +109,60 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
     }
   }
 
-  const inputStyle = {
-    width: "100%", padding: "0.4rem 0.6rem",
-    borderRadius: "0.4rem", border: "1px solid #d1d5db",
-    fontSize: "0.8rem", boxSizing: "border-box",
-    backgroundColor: "white",
-  };
-
-  const labelStyle = {
-    display: "block", fontSize: "0.75rem",
-    fontWeight: 600, color: "#374151", marginBottom: "0.2rem",
-  };
-
   return (
-    <div style={{ padding: "1rem", overflowY: "auto", height: "100%" }}>
+    <div style={{ padding: 16, overflowY: "auto", height: "100%" }}>
 
       {/* En-tête */}
       <div style={{
         display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "1rem",
+        alignItems: "center", marginBottom: 16,
       }}>
         <div>
-          <p style={{
-            fontSize: "0.7rem", color: "#9ca3af",
-            textTransform: "uppercase", fontWeight: 600,
-          }}>
-            Remote Sensing
-          </p>
+          <SectionTitle style={{ marginBottom: 4 }}>Remote Sensing</SectionTitle>
           <h2 style={{
-            fontSize: "1rem", fontWeight: "bold", color: "#2E5E3E",
+            display: "flex", alignItems: "center", gap: 6,
+            fontSize: theme.font.size.base, fontWeight: 700, color: theme.colors.text,
           }}>
-            🛰️ Indices spectraux
+            <Satellite size={16} color={theme.colors.primary} /> Indices spectraux
           </h2>
         </div>
-        <button
-          onClick={onCancel}
-          style={{
-            background: "none", border: "none",
-            cursor: "pointer", fontSize: "1.2rem", color: "#9ca3af",
-          }}
-        >
-          ✕
+        <button onClick={onCancel} style={closeButtonStyle}>
+          <X size={18} />
         </button>
       </div>
 
       {/* Contexte parcelle */}
       <div style={{
-        backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
-        borderRadius: "0.5rem", padding: "0.5rem 0.75rem",
-        marginBottom: "1rem", fontSize: "0.78rem", color: "#166534",
+        display: "flex", alignItems: "center", gap: 6,
+        border: `1px solid ${theme.colors.border}`,
+        borderRadius: theme.radius.md, padding: "8px 12px",
+        marginBottom: 16, fontSize: theme.font.size.sm, color: theme.colors.textSecondary,
       }}>
-        📐 Parcelle : <strong>{p.nom}</strong> — {p.superficie_ha} ha
+        <LandPlot size={14} color={theme.colors.textMuted} />
+        Parcelle : <strong style={{ color: theme.colors.text }}>{p.nom}</strong> — {p.superficie_ha} ha
       </div>
 
       {/* Onglets */}
-      <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", borderBottom: `1px solid ${theme.colors.border}`, marginBottom: 16 }}>
         {[
-          { id: "analyse",     label: "🛰️ Analyse" },
-          { id: "comparaison", label: "📊 Comparaison" },
-        ].map(({ id, label }) => (
+          { id: "analyse",     label: "Analyse",     icon: Satellite },
+          { id: "comparaison", label: "Comparaison", icon: BarChart3 },
+        ].map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setOnglet(id)}
             style={{
-              flex: 1, padding: "0.5rem",
-              borderRadius: "0.4rem",
-              border: `2px solid ${onglet === id ? "#2E5E3E" : "#e5e7eb"}`,
-              backgroundColor: onglet === id ? "#2E5E3E" : "white",
-              color: onglet === id ? "white" : "#374151",
-              cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 6,
+              flex: 1, padding: "8px 4px",
+              border: "none",
+              borderBottom: onglet === id ? `2px solid ${theme.colors.primary}` : "2px solid transparent",
+              backgroundColor: "transparent",
+              color: onglet === id ? theme.colors.primary : theme.colors.textSecondary,
+              cursor: "pointer", fontSize: theme.font.size.sm, fontWeight: 600,
+              justifyContent: "center",
             }}
           >
-            {label}
+            <Icon size={14} /> {label}
           </button>
         ))}
       </div>
@@ -182,7 +179,7 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
           <form onSubmit={handleRechercher}>
             <div style={{
               display: "grid", gridTemplateColumns: "1fr 1fr",
-              gap: "0.5rem", marginBottom: "0.75rem",
+              gap: 8, marginBottom: 12,
             }}>
               <div>
                 <label style={labelStyle}>Date début</label>
@@ -202,7 +199,7 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
               </div>
             </div>
 
-            <div style={{ marginBottom: "0.75rem" }}>
+            <div style={{ marginBottom: 12 }}>
               <label style={labelStyle}>
                 Couverture nuageuse max : {nuageMax}%
               </label>
@@ -214,75 +211,72 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              icon={Search}
               disabled={isSearching}
-              style={{
-                width: "100%", padding: "0.6rem",
-                borderRadius: "0.4rem",
-                backgroundColor: isSearching ? "#9ca3af" : "#2E5E3E",
-                border: "none", color: "white", fontWeight: 600,
-                cursor: isSearching ? "not-allowed" : "pointer",
-                fontSize: "0.85rem", marginBottom: "1rem",
-              }}
+              style={{ marginBottom: 16 }}
             >
-              {isSearching ? "Recherche..." : "🔍 Rechercher des images Sentinel-2"}
-            </button>
+              {isSearching ? "Recherche..." : "Rechercher des images Sentinel-2"}
+            </Button>
           </form>
 
           {/* Résultats de recherche */}
           {searchDone && images.length === 0 && (
             <div style={{
-              textAlign: "center", padding: "1rem",
-              color: "#9ca3af", fontSize: "0.85rem",
+              textAlign: "center", padding: 16,
+              color: theme.colors.textMuted, fontSize: theme.font.size.sm,
             }}>
-              📭 Aucune image disponible pour cette période.
+              Aucune image disponible pour cette période.
             </div>
           )}
 
           {images.length > 0 && (
-            <div style={{ marginBottom: "1rem" }}>
+            <div style={{ marginBottom: 16 }}>
               <p style={{
-                fontSize: "0.78rem", fontWeight: 600,
-                color: "#374151", marginBottom: "0.5rem",
+                fontSize: theme.font.size.xs, fontWeight: 600,
+                color: theme.colors.textSecondary, marginBottom: 8,
               }}>
                 {images.length} image(s) disponible(s) :
               </p>
               {images.map((img) => (
                 <div key={img.id} style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "0.5rem", padding: "0.6rem",
-                  marginBottom: "0.4rem",
+                  border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.radius.md, padding: 10,
+                  marginBottom: 6,
                   backgroundColor: imageSelectionnee?.id === img.id
-                    ? "#f0fdf4" : "white",
+                    ? theme.colors.bg : theme.colors.surface,
                 }}>
                   <div style={{
                     display: "flex", justifyContent: "space-between",
                     alignItems: "center",
                   }}>
                     <div>
-                      <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1f2937" }}>
-                        📅 {img.date}
+                      <p style={{
+                        display: "flex", alignItems: "center", gap: 5,
+                        fontSize: theme.font.size.sm, fontWeight: 600, color: theme.colors.text,
+                      }}>
+                        <Calendar size={12} /> {img.date}
                       </p>
-                      <p style={{ fontSize: "0.72rem", color: "#6b7280" }}>
-                        ☁️ {img.nuage?.toFixed(1)}% nuages
+                      <p style={{
+                        display: "flex", alignItems: "center", gap: 5,
+                        fontSize: theme.font.size.xs, color: theme.colors.textMuted, marginTop: 2,
+                      }}>
+                        <Cloud size={12} /> {img.nuage?.toFixed(1)}% nuages
                         — {(img.taille / 1024 / 1024).toFixed(0)} Mo
                       </p>
                     </div>
-                    <button
+                    <Button
+                      variant="primary"
+                      icon={Download}
+                      fullWidth={false}
                       onClick={() => handleTelecharger(img)}
                       disabled={isDownloading}
-                      style={{
-                        padding: "0.35rem 0.6rem",
-                        borderRadius: "0.4rem",
-                        backgroundColor: isDownloading ? "#9ca3af" : "#2E5E3E",
-                        border: "none", color: "white",
-                        cursor: isDownloading ? "not-allowed" : "pointer",
-                        fontSize: "0.75rem", fontWeight: 600,
-                      }}
+                      style={{ padding: "6px 10px", fontSize: theme.font.size.xs }}
                     >
-                      📥 Télécharger
-                    </button>
+                      Télécharger
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -292,24 +286,21 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
           {/* Statut du traitement */}
           {statut && (
             <div style={{
-              backgroundColor: statut === "termine" ? "#f0fdf4"
-                : statut === "erreur" ? "#fef2f2" : "#eff6ff",
-              border: `1px solid ${
-                statut === "termine" ? "#bbf7d0"
-                : statut === "erreur" ? "#fecaca" : "#bfdbfe"
-              }`,
-              borderRadius: "0.5rem", padding: "0.75rem",
-              marginBottom: "1rem",
+              border: `1px solid ${theme.colors.border}`,
+              borderLeft: `3px solid ${statutColor[statut] || theme.colors.info}`,
+              borderRadius: theme.radius.sm, padding: 12,
+              marginBottom: 16,
             }}>
               <p style={{
-                fontSize: "0.85rem", fontWeight: 600,
-                color: statut === "termine" ? "#166534"
-                  : statut === "erreur" ? "#dc2626" : "#1e40af",
+                display: "flex", alignItems: "center", gap: 6,
+                fontSize: theme.font.size.sm, fontWeight: 600,
+                color: statutColor[statut] || theme.colors.info,
               }}>
+                {isDownloading && <Loader2 size={13} className="animate-spin" />}
                 {statutLabel[statut] || statut}
               </p>
               {isDownloading && (
-                <p style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "0.3rem" }}>
+                <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted, marginTop: 4 }}>
                   Le traitement peut prendre plusieurs minutes...
                 </p>
               )}
@@ -319,18 +310,18 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
           {/* Résultats des indices */}
           {indices && (
             <div>
-              <div style={{ display: "flex", gap: "0.4rem", marginBottom: "0.75rem" }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
                 {["ndvi", "ndwi", "savi"].map(ind => (
                   <button
                     key={ind}
                     onClick={() => setIndiceActif(ind)}
                     style={{
-                      flex: 1, padding: "0.4rem",
-                      borderRadius: "0.4rem",
-                      border: `2px solid ${indiceActif === ind ? "#2E5E3E" : "#e5e7eb"}`,
-                      backgroundColor: indiceActif === ind ? "#2E5E3E" : "white",
-                      color: indiceActif === ind ? "white" : "#374151",
-                      cursor: "pointer", fontSize: "0.78rem", fontWeight: 600,
+                      flex: 1, padding: "6px",
+                      borderRadius: theme.radius.sm,
+                      border: `1px solid ${indiceActif === ind ? theme.colors.primary : theme.colors.border}`,
+                      backgroundColor: indiceActif === ind ? theme.colors.primary : theme.colors.surface,
+                      color: indiceActif === ind ? "white" : theme.colors.textSecondary,
+                      cursor: "pointer", fontSize: theme.font.size.xs, fontWeight: 600,
                     }}
                   >
                     {ind.toUpperCase()}
@@ -339,16 +330,13 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
               </div>
 
               <div style={{
-                backgroundColor: "#f9fafb",
-                borderRadius: "0.5rem", padding: "0.75rem",
-                marginBottom: "0.75rem",
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.radius.md, padding: 12,
+                marginBottom: 12,
               }}>
-                <p style={{
-                  fontSize: "0.78rem", fontWeight: 700,
-                  color: "#2E5E3E", marginBottom: "0.5rem",
-                }}>
+                <SectionTitle style={{ marginBottom: 8 }}>
                   {indiceActif.toUpperCase()} — Résultats
-                </p>
+                </SectionTitle>
                 {[
                   { label: "Moyenne", value: indices[`${indiceActif}_mean`]?.toFixed(3) },
                   { label: "Min",     value: indices[`${indiceActif}_min`]?.toFixed(3) },
@@ -356,11 +344,11 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
                 ].map(({ label, value }) => (
                   <div key={label} style={{
                     display: "flex", justifyContent: "space-between",
-                    fontSize: "0.78rem", padding: "3px 0",
-                    borderBottom: "1px solid #f3f4f6",
+                    fontSize: theme.font.size.sm, padding: "6px 0",
+                    borderBottom: `1px solid ${theme.colors.border}`,
                   }}>
-                    <span style={{ color: "#6b7280" }}>{label}</span>
-                    <span style={{ fontWeight: 600, color: "#1f2937" }}>
+                    <span style={{ color: theme.colors.textSecondary }}>{label}</span>
+                    <span style={{ fontWeight: 600, color: theme.colors.text }}>
                       {value ?? "—"}
                     </span>
                   </div>
@@ -368,10 +356,10 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
               </div>
 
               {imageId && (
-                <div style={{ marginBottom: "0.75rem" }}>
+                <div style={{ marginBottom: 12 }}>
                   <p style={{
-                    fontSize: "0.75rem", fontWeight: 600,
-                    color: "#374151", marginBottom: "0.4rem",
+                    fontSize: theme.font.size.xs, fontWeight: 600,
+                    color: theme.colors.textSecondary, marginBottom: 6,
                   }}>
                     Carte {indiceActif.toUpperCase()} :
                   </p>
@@ -379,8 +367,8 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
                     src={`/api/remote-sensing/image/${imageId}/${indiceActif}/`}
                     alt={`Carte ${indiceActif}`}
                     style={{
-                      width: "100%", borderRadius: "0.4rem",
-                      border: "1px solid #e5e7eb",
+                      width: "100%", borderRadius: theme.radius.md,
+                      border: `1px solid ${theme.colors.border}`,
                     }}
                   />
                 </div>
@@ -388,20 +376,21 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
 
               {indices.interpretation && (
                 <div style={{
-                  backgroundColor: "#eff6ff",
-                  border: "1px solid #bfdbfe",
-                  borderRadius: "0.5rem", padding: "0.75rem",
+                  border: `1px solid ${theme.colors.border}`,
+                  borderLeft: `3px solid ${theme.colors.info}`,
+                  borderRadius: theme.radius.sm, padding: 12,
                 }}>
                   <p style={{
-                    fontSize: "0.78rem", fontWeight: 700,
-                    color: "#1e40af", marginBottom: "0.4rem",
+                    display: "flex", alignItems: "center", gap: 6,
+                    fontSize: theme.font.size.xs, fontWeight: 700,
+                    color: theme.colors.info, marginBottom: 6,
                   }}>
-                    🔍 Interprétation automatique
+                    <Info size={13} /> Interprétation automatique
                   </p>
                   {indices.interpretation.split("\n").map((ligne, i) => (
                     <p key={i} style={{
-                      fontSize: "0.75rem", color: "#1e40af",
-                      marginBottom: "0.2rem",
+                      fontSize: theme.font.size.xs, color: theme.colors.textSecondary,
+                      marginBottom: 4,
                     }}>
                       • {ligne}
                     </p>
@@ -413,12 +402,9 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
 
           {/* Erreur */}
           {error && (
-            <div style={{
-              backgroundColor: "#fef2f2", border: "1px solid #fecaca",
-              borderRadius: "0.5rem", padding: "0.6rem",
-              fontSize: "0.8rem", color: "#dc2626", marginTop: "0.5rem",
-            }}>
-              ⚠️ {error}
+            <div style={errorBoxStyle}>
+              <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+              {error}
             </div>
           )}
         </>
@@ -427,3 +413,32 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
     </div>
   );
 }
+
+const inputStyle = {
+  width: "100%", padding: "8px 10px",
+  borderRadius: theme.radius.md, border: `1px solid ${theme.colors.borderStrong}`,
+  fontSize: theme.font.size.sm, boxSizing: "border-box",
+  backgroundColor: theme.colors.surface, outline: "none",
+  fontFamily: theme.font.family,
+};
+
+const labelStyle = {
+  display: "block", fontSize: theme.font.size.xs,
+  fontWeight: 600, color: theme.colors.textSecondary, marginBottom: 4,
+};
+
+const closeButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "none", border: "none",
+  cursor: "pointer", color: theme.colors.textMuted,
+  width: 28, height: 28,
+};
+
+const errorBoxStyle = {
+  display: "flex", alignItems: "flex-start", gap: 6,
+  borderLeft: `3px solid ${theme.colors.danger}`,
+  backgroundColor: "#FEF2F2",
+  borderRadius: theme.radius.sm,
+  padding: "8px 10px",
+  marginTop: 8, fontSize: theme.font.size.xs, color: theme.colors.danger,
+};

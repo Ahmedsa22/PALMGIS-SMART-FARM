@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
+import {
+  BarChart3, X, LandPlot, Calendar, Cloud, AlertTriangle, Info,
+  ArrowUp, ArrowDown, ArrowRight, Images,
+} from "lucide-react";
 import api from "../../api/axios";
+import { theme } from "../../styles/theme";
+import Button from "../ui/Button";
+import { SectionTitle } from "../ui/Badge";
 
 export default function ComparaisonPanel({ parcelle, onCancel }) {
   const p = parcelle.properties;
@@ -12,7 +19,7 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
   const [isComparing, setIsComparing]     = useState(false);
   const [isLoading, setIsLoading]         = useState(true);
   const [error, setError]                 = useState(null);
-  
+
 
   // Charge l'historique des images calculées
   useEffect(() => {
@@ -58,86 +65,72 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
   }
 
   const couleurEvol = (val) => {
-    if (val === null || val === undefined) return "#6b7280";
-    if (val > 5)  return "#22c55e";
-    if (val > 0)  return "#86efac";
-    if (val > -5) return "#f97316";
-    return "#ef4444";
+    if (val === null || val === undefined) return theme.colors.textMuted;
+    if (val > 5)  return theme.colors.success;
+    if (val > 0)  return theme.colors.santeBon;
+    if (val > -5) return theme.colors.warning;
+    return theme.colors.danger;
   };
 
-  const fleche = (val) => {
-    if (val === null || val === undefined) return "→";
-    if (val > 0) return "↑";
-    return "↓";
-  };
-
-  const inputStyle = {
-    width: "100%", padding: "0.4rem 0.6rem",
-    borderRadius: "0.4rem", border: "1px solid #d1d5db",
-    fontSize: "0.8rem", boxSizing: "border-box",
-    backgroundColor: "white",
-  };
-
-  const labelStyle = {
-    display: "block", fontSize: "0.75rem",
-    fontWeight: 600, color: "#374151", marginBottom: "0.2rem",
+  const FlecheEvol = ({ val }) => {
+    if (val === null || val === undefined) return <ArrowRight size={12} />;
+    return val > 0 ? <ArrowUp size={12} /> : <ArrowDown size={12} />;
   };
 
   return (
-    <div style={{ padding: "1rem", overflowY: "auto", height: "100%" }}>
+    <div style={{ padding: 16, overflowY: "auto", height: "100%" }}>
 
       {/* En-tête */}
       <div style={{
         display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "1rem",
+        alignItems: "center", marginBottom: 16,
       }}>
         <div>
-          <p style={{
-            fontSize: "0.7rem", color: "#9ca3af",
-            textTransform: "uppercase", fontWeight: 600,
-          }}>
-            Remote Sensing
-          </p>
+          <SectionTitle style={{ marginBottom: 4 }}>Remote Sensing</SectionTitle>
           <h2 style={{
-            fontSize: "1rem", fontWeight: "bold", color: "#2E5E3E",
+            display: "flex", alignItems: "center", gap: 6,
+            fontSize: theme.font.size.base, fontWeight: 700, color: theme.colors.text,
           }}>
-            📊 Comparaison temporelle
+            <BarChart3 size={16} color={theme.colors.primary} /> Comparaison temporelle
           </h2>
         </div>
-        <button onClick={onCancel} style={{
-          background: "none", border: "none",
-          cursor: "pointer", fontSize: "1.2rem", color: "#9ca3af",
-        }}>✕</button>
+        <button onClick={onCancel} style={closeButtonStyle}>
+          <X size={18} />
+        </button>
       </div>
 
       {/* Contexte */}
       <div style={{
-        backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
-        borderRadius: "0.5rem", padding: "0.5rem 0.75rem",
-        marginBottom: "1rem", fontSize: "0.78rem", color: "#166534",
+        display: "flex", alignItems: "center", gap: 6,
+        border: `1px solid ${theme.colors.border}`,
+        borderRadius: theme.radius.md, padding: "8px 12px",
+        marginBottom: 16, fontSize: theme.font.size.sm, color: theme.colors.textSecondary,
       }}>
-        📐 Parcelle : <strong>{p.nom}</strong>
+        <LandPlot size={14} color={theme.colors.textMuted} />
+        Parcelle : <strong style={{ color: theme.colors.text }}>{p.nom}</strong>
         {historique.length > 0 && (
-          <span> — {historique.length} analyse(s) disponible(s)</span>
+          <span>— {historique.length} analyse(s) disponible(s)</span>
         )}
       </div>
 
       {isLoading ? (
-        <p style={{ textAlign: "center", color: "#9ca3af", padding: "1rem" }}>
+        <p style={{ textAlign: "center", color: theme.colors.textMuted, padding: 16, fontSize: theme.font.size.sm }}>
           Chargement de l'historique...
         </p>
       ) : historique.length < 2 ? (
         <div style={{
-          textAlign: "center", padding: "2rem",
-          backgroundColor: "#fefce8", border: "1px solid #fef08a",
-          borderRadius: "0.5rem",
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+          textAlign: "center", padding: 24,
+          border: `1px solid ${theme.colors.border}`,
+          borderLeft: `3px solid ${theme.colors.warning}`,
+          borderRadius: theme.radius.sm,
         }}>
-          <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>⚠️</p>
-          <p style={{ fontSize: "0.85rem", color: "#854d0e", fontWeight: 600 }}>
+          <AlertTriangle size={20} color={theme.colors.warning} />
+          <p style={{ fontSize: theme.font.size.sm, color: theme.colors.text, fontWeight: 600 }}>
             Il faut au moins 2 analyses terminées pour comparer.
           </p>
-          <p style={{ fontSize: "0.78rem", color: "#92400e", marginTop: "0.4rem" }}>
-            Va dans l'onglet "Analyse" pour télécharger des images
+          <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textSecondary }}>
+            Va dans l'onglet « Analyse » pour télécharger des images
             Sentinel-2 supplémentaires.
           </p>
         </div>
@@ -145,8 +138,8 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
         <form onSubmit={handleComparer}>
 
           {/* Sélection des images */}
-          <div style={{ marginBottom: "0.75rem" }}>
-            <label style={labelStyle}>📅 Image — Période 1</label>
+          <div style={{ marginBottom: 12 }}>
+            <label style={labelStyle}>Image — Période 1</label>
             <select
               value={image1}
               onChange={e => setImage1(e.target.value)}
@@ -156,15 +149,15 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
               <option value="">Sélectionne une date...</option>
               {historique.map(img => (
                 <option key={img.id} value={img.id}>
-                  {img.date} — ☁️{img.nuage_pct?.toFixed(1)}%
+                  {img.date} — {img.nuage_pct?.toFixed(1)}% nuages
                   {img.ndvi_mean ? ` — NDVI: ${img.ndvi_mean?.toFixed(3)}` : ""}
                 </option>
               ))}
             </select>
           </div>
 
-          <div style={{ marginBottom: "0.75rem" }}>
-            <label style={labelStyle}>📅 Image — Période 2</label>
+          <div style={{ marginBottom: 12 }}>
+            <label style={labelStyle}>Image — Période 2</label>
             <select
               value={image2}
               onChange={e => setImage2(e.target.value)}
@@ -174,7 +167,7 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
               <option value="">Sélectionne une date...</option>
               {historique.map(img => (
                 <option key={img.id} value={img.id}>
-                  {img.date} — ☁️{img.nuage_pct?.toFixed(1)}%
+                  {img.date} — {img.nuage_pct?.toFixed(1)}% nuages
                   {img.ndvi_mean ? ` — NDVI: ${img.ndvi_mean?.toFixed(3)}` : ""}
                 </option>
               ))}
@@ -182,21 +175,21 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
           </div>
 
           {/* Indice */}
-          <div style={{ marginBottom: "1rem" }}>
+          <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Indice à comparer</label>
-            <div style={{ display: "flex", gap: "0.4rem" }}>
+            <div style={{ display: "flex", gap: 6 }}>
               {["ndvi", "ndwi", "savi"].map(ind => (
                 <button
                   key={ind}
                   type="button"
                   onClick={() => setIndice(ind)}
                   style={{
-                    flex: 1, padding: "0.4rem",
-                    borderRadius: "0.4rem",
-                    border: `2px solid ${indice === ind ? "#2E5E3E" : "#e5e7eb"}`,
-                    backgroundColor: indice === ind ? "#2E5E3E" : "white",
-                    color: indice === ind ? "white" : "#374151",
-                    cursor: "pointer", fontSize: "0.78rem", fontWeight: 600,
+                    flex: 1, padding: "6px",
+                    borderRadius: theme.radius.sm,
+                    border: `1px solid ${indice === ind ? theme.colors.primary : theme.colors.border}`,
+                    backgroundColor: indice === ind ? theme.colors.primary : theme.colors.surface,
+                    color: indice === ind ? "white" : theme.colors.textSecondary,
+                    cursor: "pointer", fontSize: theme.font.size.xs, fontWeight: 600,
                   }}
                 >
                   {ind.toUpperCase()}
@@ -206,30 +199,21 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
           </div>
 
           {error && (
-            <div style={{
-              backgroundColor: "#fef2f2", border: "1px solid #fecaca",
-              borderRadius: "0.4rem", padding: "0.5rem",
-              fontSize: "0.78rem", color: "#dc2626", marginBottom: "0.75rem",
-            }}>
-              ⚠️ {error}
+            <div style={errorBoxStyle}>
+              <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+              {error}
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            icon={BarChart3}
             disabled={isComparing || !image1 || !image2}
-            style={{
-              width: "100%", padding: "0.6rem",
-              borderRadius: "0.4rem",
-              backgroundColor: isComparing || !image1 || !image2
-                ? "#9ca3af" : "#2E5E3E",
-              border: "none", color: "white", fontWeight: 600,
-              cursor: isComparing ? "not-allowed" : "pointer",
-              fontSize: "0.85rem", marginBottom: "1rem",
-            }}
+            style={{ marginBottom: 16 }}
           >
-            {isComparing ? "Comparaison..." : "📊 Comparer"}
-          </button>
+            {isComparing ? "Comparaison..." : "Comparer"}
+          </Button>
         </form>
       )}
 
@@ -239,24 +223,21 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
 
           {/* Tableau comparatif */}
           <div style={{
-            backgroundColor: "#f9fafb",
-            borderRadius: "0.5rem", padding: "0.75rem",
-            marginBottom: "0.75rem",
-            border: "1px solid #e5e7eb",
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.radius.md, padding: 12,
+            marginBottom: 12,
           }}>
-            <p style={{
-              fontSize: "0.78rem", fontWeight: 700,
-              color: "#2E5E3E", marginBottom: "0.5rem",
-            }}>
+            <SectionTitle style={{ marginBottom: 8 }}>
               {resultat.indice} — Comparaison
-            </p>
+            </SectionTitle>
 
             {/* En-têtes */}
             <div style={{
               display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr",
-              gap: "0.25rem", fontSize: "0.7rem",
-              fontWeight: 700, color: "#6b7280",
-              marginBottom: "0.4rem",
+              gap: 4, fontSize: "10px",
+              fontWeight: 700, color: theme.colors.textMuted,
+              textTransform: "uppercase",
+              marginBottom: 6,
             }}>
               <span>Stat</span>
               <span style={{ textAlign: "center" }}>
@@ -277,11 +258,11 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
               <div key={key} style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr 1fr 1fr",
-                gap: "0.25rem", fontSize: "0.78rem",
-                padding: "0.3rem 0",
-                borderBottom: "1px solid #f3f4f6",
+                gap: 4, fontSize: theme.font.size.sm,
+                padding: "6px 0",
+                borderBottom: `1px solid ${theme.colors.border}`,
               }}>
-                <span style={{ color: "#6b7280" }}>{label}</span>
+                <span style={{ color: theme.colors.textSecondary }}>{label}</span>
                 <span style={{ textAlign: "center", fontWeight: 600 }}>
                   {resultat.image_1[key]?.toFixed(3) ?? "—"}
                 </span>
@@ -289,10 +270,11 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
                   {resultat.image_2[key]?.toFixed(3) ?? "—"}
                 </span>
                 <span style={{
-                  textAlign: "center", fontWeight: 700,
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 2,
+                  fontWeight: 700,
                   color: couleurEvol(evol),
                 }}>
-                  {fleche(evol)} {evol !== null ? `${evol}%` : "—"}
+                  <FlecheEvol val={evol} /> {evol !== null ? `${evol}%` : "—"}
                 </span>
               </div>
             ))}
@@ -300,17 +282,11 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
 
           {/* Graphique barres simulé en CSS */}
           <div style={{
-            backgroundColor: "#f9fafb",
-            borderRadius: "0.5rem", padding: "0.75rem",
-            marginBottom: "0.75rem",
-            border: "1px solid #e5e7eb",
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.radius.md, padding: 12,
+            marginBottom: 12,
           }}>
-            <p style={{
-              fontSize: "0.78rem", fontWeight: 700,
-              color: "#2E5E3E", marginBottom: "0.75rem",
-            }}>
-              📊 Graphique comparatif
-            </p>
+            <SectionTitle style={{ marginBottom: 12 }}>Graphique comparatif</SectionTitle>
 
             {[
               { label: "Moyenne", v1: resultat.image_1.mean, v2: resultat.image_2.mean },
@@ -321,49 +297,41 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
               const pct1 = Math.abs((v1 || 0) / max_val * 100);
               const pct2 = Math.abs((v2 || 0) / max_val * 100);
               return (
-                <div key={label} style={{ marginBottom: "0.6rem" }}>
-                  <p style={{ fontSize: "0.72rem", color: "#6b7280", marginBottom: "0.2rem" }}>
+                <div key={label} style={{ marginBottom: 10 }}>
+                  <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted, marginBottom: 4 }}>
                     {label}
                   </p>
                   {/* Période 1 */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.2rem" }}>
-                    <span style={{ fontSize: "0.68rem", color: "#6b7280", width: "60px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontSize: "10px", color: theme.colors.textMuted, width: 60 }}>
                       {resultat.image_1.date.slice(0, 4)}
                     </span>
-                    <div style={{
-                      flex: 1, height: "12px",
-                      backgroundColor: "#e5e7eb", borderRadius: "6px",
-                      overflow: "hidden",
-                    }}>
+                    <div style={barTrackStyle}>
                       <div style={{
                         width: `${pct1}%`, height: "100%",
-                        backgroundColor: "#2E5E3E",
-                        borderRadius: "6px",
+                        backgroundColor: theme.colors.primary,
+                        borderRadius: 6,
                         transition: "width 0.5s ease",
                       }} />
                     </div>
-                    <span style={{ fontSize: "0.68rem", fontWeight: 600, width: "40px" }}>
+                    <span style={{ fontSize: "10px", fontWeight: 600, width: 40 }}>
                       {v1?.toFixed(3)}
                     </span>
                   </div>
                   {/* Période 2 */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <span style={{ fontSize: "0.68rem", color: "#6b7280", width: "60px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: "10px", color: theme.colors.textMuted, width: 60 }}>
                       {resultat.image_2.date.slice(0, 4)}
                     </span>
-                    <div style={{
-                      flex: 1, height: "12px",
-                      backgroundColor: "#e5e7eb", borderRadius: "6px",
-                      overflow: "hidden",
-                    }}>
+                    <div style={barTrackStyle}>
                       <div style={{
                         width: `${pct2}%`, height: "100%",
-                        backgroundColor: "#B08D57",
-                        borderRadius: "6px",
+                        backgroundColor: theme.colors.accent,
+                        borderRadius: 6,
                         transition: "width 0.5s ease",
                       }} />
                     </div>
-                    <span style={{ fontSize: "0.68rem", fontWeight: 600, width: "40px" }}>
+                    <span style={{ fontSize: "10px", fontWeight: 600, width: 40 }}>
                       {v2?.toFixed(3)}
                     </span>
                   </div>
@@ -372,16 +340,16 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
             })}
 
             {/* Légende */}
-            <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <div style={{ width: "12px", height: "12px", backgroundColor: "#2E5E3E", borderRadius: "2px" }} />
-                <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
+            <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: theme.colors.primary }} />
+                <span style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted }}>
                   {resultat.image_1.date}
                 </span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <div style={{ width: "12px", height: "12px", backgroundColor: "#B08D57", borderRadius: "2px" }} />
-                <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: theme.colors.accent }} />
+                <span style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted }}>
                   {resultat.image_2.date}
                 </span>
               </div>
@@ -390,41 +358,48 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
 
           {/* Images côte à côte */}
           <div style={{
-            backgroundColor: "#f9fafb",
-            borderRadius: "0.5rem", padding: "0.75rem",
-            marginBottom: "0.75rem",
-            border: "1px solid #e5e7eb",
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.radius.md, padding: 12,
+            marginBottom: 12,
           }}>
             <p style={{
-              fontSize: "0.78rem", fontWeight: 700,
-              color: "#2E5E3E", marginBottom: "0.5rem",
+              display: "flex", alignItems: "center", gap: 6,
+              fontSize: theme.font.size.xs, fontWeight: 700,
+              color: theme.colors.textMuted, textTransform: "uppercase", letterSpacing: "1px",
+              marginBottom: 8,
             }}>
-              🖼️ Cartes {resultat.indice} côte à côte
+              <Images size={13} /> Cartes {resultat.indice} côte à côte
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               <div>
-                <p style={{ fontSize: "0.7rem", color: "#6b7280", marginBottom: "0.3rem", textAlign: "center" }}>
-                  {resultat.image_1.date}
+                <p style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+                  fontSize: theme.font.size.xs, color: theme.colors.textMuted, marginBottom: 4,
+                }}>
+                  <Calendar size={11} /> {resultat.image_1.date}
                 </p>
                 <img
                   src={resultat.image_1.chemin_png}
                   alt={`${resultat.indice} ${resultat.image_1.date}`}
                   style={{
-                    width: "100%", borderRadius: "0.4rem",
-                    border: "2px solid #2E5E3E",
+                    width: "100%", borderRadius: theme.radius.md,
+                    border: `2px solid ${theme.colors.primary}`,
                   }}
                 />
               </div>
               <div>
-                <p style={{ fontSize: "0.7rem", color: "#6b7280", marginBottom: "0.3rem", textAlign: "center" }}>
-                  {resultat.image_2.date}
+                <p style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+                  fontSize: theme.font.size.xs, color: theme.colors.textMuted, marginBottom: 4,
+                }}>
+                  <Calendar size={11} /> {resultat.image_2.date}
                 </p>
                 <img
                   src={resultat.image_2.chemin_png}
                   alt={`${resultat.indice} ${resultat.image_2.date}`}
                   style={{
-                    width: "100%", borderRadius: "0.4rem",
-                    border: "2px solid #B08D57",
+                    width: "100%", borderRadius: theme.radius.md,
+                    border: `2px solid ${theme.colors.accent}`,
                   }}
                 />
               </div>
@@ -434,17 +409,18 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
           {/* Interprétation */}
           {resultat.interpretation && (
             <div style={{
-              backgroundColor: "#eff6ff",
-              border: "1px solid #bfdbfe",
-              borderRadius: "0.5rem", padding: "0.75rem",
+              border: `1px solid ${theme.colors.border}`,
+              borderLeft: `3px solid ${theme.colors.info}`,
+              borderRadius: theme.radius.sm, padding: 12,
             }}>
               <p style={{
-                fontSize: "0.78rem", fontWeight: 700,
-                color: "#1e40af", marginBottom: "0.3rem",
+                display: "flex", alignItems: "center", gap: 6,
+                fontSize: theme.font.size.xs, fontWeight: 700,
+                color: theme.colors.info, marginBottom: 6,
               }}>
-                🔍 Interprétation de la tendance
+                <Info size={13} /> Interprétation de la tendance
               </p>
-              <p style={{ fontSize: "0.78rem", color: "#1e40af" }}>
+              <p style={{ fontSize: theme.font.size.sm, color: theme.colors.textSecondary }}>
                 {resultat.interpretation}
               </p>
             </div>
@@ -454,3 +430,38 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
     </div>
   );
 }
+
+const inputStyle = {
+  width: "100%", padding: "8px 10px",
+  borderRadius: theme.radius.md, border: `1px solid ${theme.colors.borderStrong}`,
+  fontSize: theme.font.size.sm, boxSizing: "border-box",
+  backgroundColor: theme.colors.surface, outline: "none",
+  fontFamily: theme.font.family,
+};
+
+const labelStyle = {
+  display: "block", fontSize: theme.font.size.xs,
+  fontWeight: 600, color: theme.colors.textSecondary, marginBottom: 4,
+};
+
+const closeButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "none", border: "none",
+  cursor: "pointer", color: theme.colors.textMuted,
+  width: 28, height: 28,
+};
+
+const errorBoxStyle = {
+  display: "flex", alignItems: "flex-start", gap: 6,
+  borderLeft: `3px solid ${theme.colors.danger}`,
+  backgroundColor: "#FEF2F2",
+  borderRadius: theme.radius.sm,
+  padding: "8px 10px",
+  marginBottom: 12, fontSize: theme.font.size.xs, color: theme.colors.danger,
+};
+
+const barTrackStyle = {
+  flex: 1, height: 10,
+  backgroundColor: theme.colors.border, borderRadius: 6,
+  overflow: "hidden",
+};
