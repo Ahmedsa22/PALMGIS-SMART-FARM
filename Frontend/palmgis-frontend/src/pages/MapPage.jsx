@@ -1,4 +1,8 @@
 import { useState, useEffect } from "react";
+import {
+  ChevronLeft, ChevronRight, Pencil, Plus, History, FileDown, Satellite,
+  Trash2, LandPlot, TreePalm,
+} from "lucide-react";
 import Navbar from "../components/layout/Navbar";
 import MapContainer from "../components/map/MapContainer";
 import useMapStore from "../store/mapStore";
@@ -15,10 +19,9 @@ import CarteForm from "../components/reports/CarteForm";
 import RemoteSensingPanel from "../components/remotesensing/RemoteSensingPanel";
 import { deleteParcelle } from "../api/parcelles";
 import { deletePalm }     from "../api/palms";
-
-
-
-
+import { theme } from "../styles/theme";
+import Button from "../components/ui/Button";
+import { SectionTitle, AttributeRow, TypeBadge } from "../components/ui/Badge";
 
 export default function MapPage() {
   const sidebarOuverte = useMapStore((state) => state.sidebarOuverte);
@@ -31,6 +34,7 @@ export default function MapPage() {
       flexDirection: "column",
       width: "100%",
       height: "100%",
+      fontFamily: theme.font.family,
     }}>
 
       <Navbar />
@@ -49,8 +53,8 @@ export default function MapPage() {
           flexShrink: 0,
           overflow: "hidden",
           transition: "width 300ms ease, min-width 300ms ease",
-          backgroundColor: "white",
-          borderRight: "1px solid #e5e7eb",
+          backgroundColor: theme.colors.surface,
+          borderRight: `1px solid ${theme.colors.border}`,
           overflowY: "auto",
         }}>
           <SidebarContent />
@@ -65,31 +69,70 @@ export default function MapPage() {
         }}>
           <MapContainer />
 
-          {/* Bouton flottant pour toggle : */}
+          {/* Bouton flottant pour toggle légende */}
           <button
             onClick={() => setLegendeVisible(!legendeVisible)}
             style={{
               position: "absolute",
               bottom: "2rem",
               right: legendeVisible ? "185px" : "0.75rem",
-              backgroundColor: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: "0.5rem",
-              padding: "0.3rem 0.5rem",
+              display: "flex", alignItems: "center", gap: 4,
+              backgroundColor: theme.colors.surface,
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.radius.md,
+              padding: "6px 8px",
               cursor: "pointer",
               zIndex: 11,
-              fontSize: "0.75rem",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              fontSize: theme.font.size.xs,
+              fontWeight: 600,
+              color: theme.colors.textSecondary,
+              boxShadow: theme.shadow.sm,
               transition: "right 0.3s ease",
             }}
           >
-            {legendeVisible ? "◀ Légende" : "▶"}
+            {legendeVisible ? <><ChevronLeft size={14} /> Légende</> : <ChevronRight size={14} />}
           </button>
           <MapLegend visible={legendeVisible} />
         </main>
 
       </div>
     </div>
+  );
+}
+
+const STATUT_LABELS = {
+  active:     "Active",
+  en_repos:   "En repos",
+  abandonnee: "Abandonnée",
+};
+const STATUT_COLORS = {
+  active:     theme.colors.success,
+  en_repos:   theme.colors.warning,
+  abandonnee: theme.colors.textMuted,
+};
+
+const SANTE_LABELS = { B: "Bon", MO: "Moyen", MA: "Mauvais", MR: "Mort" };
+const SANTE_COLORS = {
+  B:  theme.colors.santeBon,
+  MO: theme.colors.santeMoyen,
+  MA: theme.colors.santeMauvais,
+  MR: theme.colors.santeMort,
+};
+
+function BackButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex", alignItems: "center", gap: 4,
+        background: "none", border: "none",
+        cursor: "pointer", fontSize: theme.font.size.xs,
+        color: theme.colors.textSecondary, marginBottom: 12,
+        padding: "4px 0", fontWeight: 600,
+      }}
+    >
+      <ChevronLeft size={14} /> Retour aux parcelles
+    </button>
   );
 }
 
@@ -103,10 +146,10 @@ function SidebarContent() {
   const user = useAuthStore((state) => state.user);
 
   const [showForm, setShowForm] = useState(false);
-  const [showHistorique, setShowHistorique] = useState(false); 
+  const [showHistorique, setShowHistorique] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [showEditParcelle, setShowEditParcelle] = useState(false);  
-  const [showEditPalm, setShowEditPalm]         = useState(false); 
+  const [showEditParcelle, setShowEditParcelle] = useState(false);
+  const [showEditPalm, setShowEditPalm]         = useState(false);
   const [showImportPalms, setShowImportPalms] = useState(false);
   const [showCarteForm, setShowCarteForm] = useState(false);
   const [showRemoteSensing, setShowRemoteSensing] = useState(false);
@@ -116,10 +159,10 @@ function SidebarContent() {
   // Reset formulaire quand on change de sélection
   useEffect(() => {
     setShowForm(false);
-    setShowHistorique(false); 
-    setShowImport(false); 
-    setShowEditParcelle(false);  
-    setShowEditPalm(false); 
+    setShowHistorique(false);
+    setShowImport(false);
+    setShowEditParcelle(false);
+    setShowEditPalm(false);
     setShowImportPalms(false);
     setShowCarteForm(false);
     setShowRemoteSensing(false);
@@ -209,7 +252,7 @@ function SidebarContent() {
       />
     );
   }
-  
+
   // ─── Historique des interventions ───
   if (showHistorique) {
     return (
@@ -235,10 +278,7 @@ function SidebarContent() {
   if (palmSelectionne) {
     const p = palmSelectionne.properties;
 
-    const etatSante = {
-      B: "✅ Bon", MO: "⚠️ Moyen",
-      MA: "🔴 Mauvais", MR: "💀 Mort"
-    }[p.etat_sante] || p.etat_sante;
+    const etatSante = SANTE_LABELS[p.etat_sante] || p.etat_sante;
 
     const etatSite = {
       ISO: "Isolé", TOF: "Touffes", V: "Vide"
@@ -249,41 +289,24 @@ function SidebarContent() {
     }[p.age] || p.age;
 
     return (
-      <div style={{ padding: "1rem" }}>
-        
+      <div style={{ padding: 16 }}>
 
-        <button
-          onClick={() => {
-            useMapStore.getState().reinitialiserSelection();
-          }}
-          style={{
-            display: "flex", alignItems: "center", gap: "0.3rem",
-            background: "none", border: "none",
-            cursor: "pointer", fontSize: "0.78rem",
-            color: "#6b7280", marginBottom: "0.75rem",
-            padding: "0.25rem 0",
-          }}
-        >
-          ← Retour aux parcelles
-      </button>
+        <BackButton onClick={() => useMapStore.getState().reinitialiserSelection()} />
 
         {/* En-tête */}
-        <p style={{
-          fontSize: "0.7rem", color: "#9ca3af",
-          textTransform: "uppercase", fontWeight: 600,
-          letterSpacing: "0.05em", marginBottom: "0.25rem"
-        }}>
-          Palmier
-        </p>
-        <h2 style={{
-          fontSize: "1.1rem", fontWeight: "bold",
-          color: "#2E5E3E", marginBottom: "1rem"
-        }}>
-          🌴 {p.code_uni}
-        </h2>
+        <SectionTitle style={{ marginBottom: 4 }}>Palmier</SectionTitle>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <h2 style={{
+            fontSize: theme.font.size.lg, fontWeight: 700,
+            color: theme.colors.text, display: "flex", alignItems: "center", gap: 6,
+          }}>
+            <TreePalm size={16} color={theme.colors.primary} /> {p.code_uni}
+          </h2>
+          <TypeBadge label={etatSante} color={SANTE_COLORS[p.etat_sante] || theme.colors.textMuted} />
+        </div>
 
         {/* Infos */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {[
             { label: "Code local",     value: p.code_local || "—" },
             { label: "Ligne / N°",     value: `${p.ligne} / ${p.numero}` },
@@ -297,58 +320,28 @@ function SidebarContent() {
               : []
             ),
           ].map(({ label, value }) => (
-            <div key={label} style={{
-              display: "flex", justifyContent: "space-between",
-              padding: "0.4rem 0",
-              borderBottom: "1px solid #f3f4f6",
-            }}>
-              <span style={{ fontSize: "0.8rem", color: "#6b7280" }}>
-                {label}
-              </span>
-              <span style={{ fontSize: "0.8rem", fontWeight: 600,
-                             color: "#1f2937", textAlign: "right" }}>
-                {value}
-              </span>
-            </div>
+            <AttributeRow key={label} label={label} value={value} />
           ))}
         </div>
 
         {/* Boutons — managers seulement */}
         {user?.role === "manager" && (
-          <div style={{
-            display: "flex", flexDirection: "column",
-            gap: "0.5rem", marginTop: "1rem"
-          }}>
-            <button onClick={() => setShowEditPalm(true)} style={{
-              padding: "0.6rem", borderRadius: "0.5rem",
-              backgroundColor: "#f0fdf4", color: "#2E5E3E",
-              border: "1px solid #bbf7d0", cursor: "pointer",
-              fontSize: "0.85rem", fontWeight: 600,
-            }}>
-              ✏️ Modifier le palmier
-            </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+            <Button variant="secondary" icon={Pencil} onClick={() => setShowEditPalm(true)}>
+              Modifier le palmier
+            </Button>
 
-            <button
-              onClick={() => setShowForm(true)}
-              style={{
-                padding: "0.6rem", borderRadius: "0.5rem",
-                backgroundColor: "#2E5E3E", color: "white",
-                border: "none", cursor: "pointer",
-                fontSize: "0.85rem", fontWeight: 600,
-              }}
-            >
-              ➕ Nouvelle intervention
-            </button>
-            <button style={{
-              padding: "0.6rem", borderRadius: "0.5rem",
-              backgroundColor: "#f3f4f6", color: "#374151",
-              border: "1px solid #e5e7eb", cursor: "pointer",
-              fontSize: "0.85rem", fontWeight: 600,
-            }} onClick={() => setShowHistorique(true)} >
-              📋 Historique interventions
-            </button>
-            {/* ← Ajoute ce bouton */}
-            <button
+            <Button variant="primary" icon={Plus} onClick={() => setShowForm(true)}>
+              Nouvelle intervention
+            </Button>
+
+            <Button variant="secondary" icon={History} onClick={() => setShowHistorique(true)}>
+              Historique interventions
+            </Button>
+
+            <Button
+              variant="danger"
+              icon={Trash2}
               onClick={async () => {
                 const code = palmSelectionne.properties?.code_uni || "ce palmier";
                 if (!window.confirm(`Supprimer le palmier "${code}" ?`)) return;
@@ -360,15 +353,9 @@ function SidebarContent() {
                   alert("Erreur lors de la suppression.");
                 }
               }}
-              style={{
-                padding: "0.6rem", borderRadius: "0.5rem",
-                backgroundColor: "#fef2f2", color: "#dc2626",
-                border: "1px solid #fecaca", cursor: "pointer",
-                fontSize: "0.85rem", fontWeight: 600,
-              }}
             >
-              🗑️ Supprimer le palmier
-            </button>
+              Supprimer le palmier
+            </Button>
           </div>
         )}
       </div>
@@ -379,131 +366,60 @@ function SidebarContent() {
   if (parcelleSelectionnee) {
     const p = parcelleSelectionnee.properties;
 
-    const statut = {
-      active:     "✅ Active",
-      en_repos:   "⏸️ En repos",
-      abandonnee: "❌ Abandonnée",
-    }[p.statut] || p.statut;
+    const statutLabel = STATUT_LABELS[p.statut] || p.statut;
 
     return (
-      <div style={{ padding: "1rem" }}>
-        
+      <div style={{ padding: 16 }}>
 
-        <button
-          onClick={() => {
-            useMapStore.getState().reinitialiserSelection();
-          }}
-          style={{
-            display: "flex", alignItems: "center", gap: "0.3rem",
-            background: "none", border: "none",
-            cursor: "pointer", fontSize: "0.78rem",
-            color: "#6b7280", marginBottom: "0.75rem",
-            padding: "0.25rem 0",
-          }}
-        >
-          ← Retour aux parcelles
-      </button>
+        <BackButton onClick={() => useMapStore.getState().reinitialiserSelection()} />
+
         {/* En-tête */}
-        <p style={{
-          fontSize: "0.7rem", color: "#9ca3af",
-          textTransform: "uppercase", fontWeight: 600,
-          letterSpacing: "0.05em", marginBottom: "0.25rem"
-        }}>
-          Parcelle
-        </p>
-        <h2 style={{
-          fontSize: "1.1rem", fontWeight: "bold",
-          color: "#2E5E3E", marginBottom: "1rem"
-        }}>
-          📐 {p.nom}
-        </h2>
+        <SectionTitle style={{ marginBottom: 4 }}>Parcelle</SectionTitle>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <h2 style={{
+            fontSize: theme.font.size.lg, fontWeight: 700,
+            color: theme.colors.text, display: "flex", alignItems: "center", gap: 6,
+          }}>
+            <LandPlot size={16} color={theme.colors.primary} /> {p.nom}
+          </h2>
+          <TypeBadge label={statutLabel} color={STATUT_COLORS[p.statut] || theme.colors.textMuted} />
+        </div>
 
         {/* Infos */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {[
-            { label: "Statut",       value: statut },
+            { label: "Statut",       value: statutLabel },
             { label: "Superficie",   value: `${p.superficie_ha} ha` },
             { label: "Périmètre",    value: `${Math.round(p.perimetre_m)} m` },
             { label: "Propriétaire", value: p.proprietaire || "—" },
           ].map(({ label, value }) => (
-            <div key={label} style={{
-              display: "flex", justifyContent: "space-between",
-              padding: "0.4rem 0",
-              borderBottom: "1px solid #f3f4f6",
-            }}>
-              <span style={{ fontSize: "0.8rem", color: "#6b7280" }}>
-                {label}
-              </span>
-              <span style={{ fontSize: "0.8rem", fontWeight: 600,
-                             color: "#1f2937" }}>
-                {value}
-              </span>
-            </div>
+            <AttributeRow key={label} label={label} value={value} />
           ))}
         </div>
 
         {/* Boutons — managers seulement */}
         {user?.role === "manager" && (
-          <div style={{
-            display: "flex", flexDirection: "column",
-            gap: "0.5rem", marginTop: "1rem"
-          }}>
-            <button onClick={() => setShowEditParcelle(true)} style={{
-              padding: "0.6rem", borderRadius: "0.5rem",
-              backgroundColor: "#f0fdf4", color: "#2E5E3E",
-              border: "1px solid #bbf7d0", cursor: "pointer",
-              fontSize: "0.85rem", fontWeight: 600,
-            }}>
-              ✏️ Modifier la parcelle
-            </button>
-            <button
-              onClick={() => setShowForm(true)}
-              style={{
-                padding: "0.6rem", borderRadius: "0.5rem",
-                backgroundColor: "#2E5E3E", color: "white",
-                border: "none", cursor: "pointer",
-                fontSize: "0.85rem", fontWeight: 600,
-              }}
-            >
-              ➕ Nouvelle intervention
-            </button>
-            <button style={{
-              padding: "0.6rem", borderRadius: "0.5rem",
-              backgroundColor: "#f3f4f6", color: "#374151",
-              border: "1px solid #e5e7eb", cursor: "pointer",
-              fontSize: "0.85rem", fontWeight: 600,
-            }} onClick={() => setShowHistorique(true)} >
-              📋 Historique
-            </button>
-            <button
-              onClick={() => setShowCarteForm(true)}
-              style={{
-                padding: "0.6rem", borderRadius: "0.5rem",
-                backgroundColor: "#f0fdf4", color: "#2E5E3E",
-                border: "1px solid #bbf7d0", cursor: "pointer",
-                fontSize: "0.85rem", fontWeight: 600,
-              }}
-            >
-              🗺️ Générer carte PDF
-            </button>
-            <button
-              onClick={() => setShowRemoteSensing(true)}
-              style={{
-                padding: "0.6rem", borderRadius: "0.5rem",
-                backgroundColor: "#eff6ff", color: "#1e40af",
-                border: "1px solid #bfdbfe", cursor: "pointer",
-                fontSize: "0.85rem", fontWeight: 600,
-              }}
-            >
-              🛰️ Indices spectraux
-            </button>
-            {/* ← Ajoute ce bouton */}
-            <button
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+            <Button variant="secondary" icon={Pencil} onClick={() => setShowEditParcelle(true)}>
+              Modifier la parcelle
+            </Button>
+            <Button variant="primary" icon={Plus} onClick={() => setShowForm(true)}>
+              Nouvelle intervention
+            </Button>
+            <Button variant="secondary" icon={History} onClick={() => setShowHistorique(true)}>
+              Historique
+            </Button>
+            <Button variant="secondary" icon={FileDown} onClick={() => setShowCarteForm(true)}>
+              Générer carte PDF
+            </Button>
+            <Button variant="secondary" icon={Satellite} onClick={() => setShowRemoteSensing(true)}>
+              Indices spectraux
+            </Button>
+            <Button
+              variant="danger"
+              icon={Trash2}
               onClick={async () => {
-                 const parcelleId = p.id || parcelleSelectionnee?.id;
-                  console.log("🗑️ Suppression parcelle id:", parcelleId);
-                  console.log("🗑️ p.id:", p.id);
-                  console.log("🗑️ parcelleSelectionnee:", parcelleSelectionnee);
+                const parcelleId = p.id || parcelleSelectionnee?.id;
                 if (!window.confirm(`Supprimer la parcelle "${p.nom}" et tous ses palmiers ?`)) return;
                 try {
                   await deleteParcelle(parcelleId);
@@ -514,15 +430,9 @@ function SidebarContent() {
                   console.log(err)
                 }
               }}
-              style={{
-                padding: "0.6rem", borderRadius: "0.5rem",
-                backgroundColor: "#fef2f2", color: "#dc2626",
-                border: "1px solid #fecaca", cursor: "pointer",
-                fontSize: "0.85rem", fontWeight: 600,
-              }}
             >
-              🗑️ Supprimer la parcelle
-            </button>
+              Supprimer la parcelle
+            </Button>
           </div>
         )}
       </div>
@@ -530,7 +440,7 @@ function SidebarContent() {
   }
 
 
- 
+
 
   // ─── Vue 1 — Rien de sélectionné ───
 return (
