@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { History, X, Inbox, AlertTriangle, TreePalm, LandPlot } from "lucide-react";
 import {
   getInterventionsByParcelle,
   getInterventionsByPalm
 } from "../../api/interventions";
+import { theme } from "../../styles/theme";
+import { SectionTitle } from "../ui/Badge";
 
 export default function InterventionList({ parcelle, palm, onClose }) {
 
@@ -34,13 +37,6 @@ export default function InterventionList({ parcelle, palm, onClose }) {
     charger();
   }, [parcelle, palm]);
 
-  // Labels lisibles
-  const labelStatut = (statut) => ({
-    active:     "✅ Active",
-    en_repos:   "⏸️ En repos",
-    abandonnee: "❌ Abandonnée",
-  })[statut] || statut;
-
   // Formate la date
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -54,65 +50,54 @@ export default function InterventionList({ parcelle, palm, onClose }) {
   };
 
   return (
-    <div style={{ padding: "1rem" }}>
+    <div style={{ padding: 16 }}>
 
       {/* En-tête */}
       <div style={{
         display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "1rem"
+        alignItems: "center", marginBottom: 16,
       }}>
         <div>
-          <p style={{
-            fontSize: "0.7rem", color: "#9ca3af",
-            textTransform: "uppercase", fontWeight: 600,
-            letterSpacing: "0.05em", marginBottom: "0.1rem"
-          }}>
-            Historique
-          </p>
+          <SectionTitle style={{ marginBottom: 4 }}>
+            <History size={11} style={{ marginRight: 4, verticalAlign: -1 }} /> Historique
+          </SectionTitle>
           <h2 style={{
-            fontSize: "0.95rem", fontWeight: "bold", color: "#2E5E3E"
+            display: "flex", alignItems: "center", gap: 6,
+            fontSize: theme.font.size.base, fontWeight: 700, color: theme.colors.text,
           }}>
+            {palm ? <TreePalm size={15} color={theme.colors.primary} /> : <LandPlot size={15} color={theme.colors.primary} />}
             {palm
-              ? `🌴 ${parcelle?.properties?.nom}_${palm.properties.code_local}`
-              : `📐 ${parcelle?.properties?.nom}`
+              ? `${parcelle?.properties?.nom}_${palm.properties.code_local}`
+              : parcelle?.properties?.nom
             }
           </h2>
         </div>
-        <button
-          onClick={onClose}
-          style={{
-            background: "none", border: "none",
-            cursor: "pointer", fontSize: "1.2rem", color: "#9ca3af"
-          }}
-        >
-          ✕
+        <button onClick={onClose} style={closeButtonStyle}>
+          <X size={18} />
         </button>
       </div>
 
       {/* Chargement */}
       {isLoading && (
-        <p style={{ fontSize: "0.85rem", color: "#9ca3af", textAlign: "center",
-                    padding: "1rem" }}>
+        <p style={{ fontSize: theme.font.size.sm, color: theme.colors.textMuted, textAlign: "center",
+                    padding: 16 }}>
           Chargement...
         </p>
       )}
 
       {/* Erreur */}
       {error && (
-        <div style={{
-          backgroundColor: "#fef2f2", border: "1px solid #fecaca",
-          borderRadius: "0.4rem", padding: "0.5rem 0.75rem",
-          fontSize: "0.8rem", color: "#dc2626"
-        }}>
-          ⚠️ {error}
+        <div style={errorBoxStyle}>
+          <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+          {error}
         </div>
       )}
 
       {/* Liste vide */}
       {!isLoading && !error && interventions.length === 0 && (
-        <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
-          <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📭</div>
-          <p style={{ fontSize: "0.85rem", color: "#9ca3af" }}>
+        <div style={{ textAlign: "center", padding: "24px 0" }}>
+          <Inbox size={28} color={theme.colors.textMuted} style={{ marginBottom: 8 }} />
+          <p style={{ fontSize: theme.font.size.sm, color: theme.colors.textMuted }}>
             Aucune intervention enregistrée.
           </p>
         </div>
@@ -120,29 +105,28 @@ export default function InterventionList({ parcelle, palm, onClose }) {
 
       {/* Liste des interventions */}
       {!isLoading && interventions.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {interventions.map((intervention) => (
             <div key={intervention.id} style={{
-              backgroundColor: "#f9fafb",
-              border: "1px solid #e5e7eb",
-              borderRadius: "0.5rem",
-              padding: "0.75rem",
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.radius.md,
+              padding: 12,
             }}>
               {/* Type + date */}
               <div style={{
                 display: "flex", justifyContent: "space-between",
-                alignItems: "flex-start", marginBottom: "0.4rem"
+                alignItems: "flex-start", marginBottom: 6,
               }}>
                 <span style={{
-                  fontSize: "0.85rem", fontWeight: 700,
-                  color: "#2E5E3E"
+                  fontSize: theme.font.size.sm, fontWeight: 700,
+                  color: theme.colors.text,
                 }}>
                   {intervention.type_intervention_nom ||
                    intervention.type_intervention}
                 </span>
                 <span style={{
-                  fontSize: "0.72rem", color: "#9ca3af",
-                  textAlign: "right", flexShrink: 0, marginLeft: "0.5rem"
+                  fontSize: theme.font.size.xs, color: theme.colors.textMuted,
+                  textAlign: "right", flexShrink: 0, marginLeft: 8,
                 }}>
                   {formatDate(intervention.date_intervention)}
                 </span>
@@ -150,16 +134,16 @@ export default function InterventionList({ parcelle, palm, onClose }) {
 
               {/* Quantité */}
               {intervention.quantite && (
-                <p style={{ fontSize: "0.78rem", color: "#6b7280",
-                            marginBottom: "0.25rem" }}>
+                <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textSecondary,
+                            marginBottom: 4 }}>
                   Quantité : <strong>{intervention.quantite}</strong>
                 </p>
               )}
 
               {/* Opérateur */}
               {intervention.operateur_username && (
-                <p style={{ fontSize: "0.78rem", color: "#6b7280",
-                            marginBottom: "0.25rem" }}>
+                <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textSecondary,
+                            marginBottom: 4 }}>
                   Par : <strong>{intervention.operateur_username}</strong>
                 </p>
               )}
@@ -167,8 +151,8 @@ export default function InterventionList({ parcelle, palm, onClose }) {
               {/* Description */}
               {intervention.description && (
                 <p style={{
-                  fontSize: "0.78rem", color: "#374151",
-                  marginTop: "0.25rem", fontStyle: "italic"
+                  fontSize: theme.font.size.xs, color: theme.colors.text,
+                  marginTop: 4, fontStyle: "italic"
                 }}>
                   "{intervention.description}"
                 </p>
@@ -181,3 +165,19 @@ export default function InterventionList({ parcelle, palm, onClose }) {
     </div>
   );
 }
+
+const closeButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "none", border: "none",
+  cursor: "pointer", color: theme.colors.textMuted,
+  width: 28, height: 28,
+};
+
+const errorBoxStyle = {
+  display: "flex", alignItems: "flex-start", gap: 6,
+  borderLeft: `3px solid ${theme.colors.danger}`,
+  backgroundColor: "#FEF2F2",
+  borderRadius: theme.radius.sm,
+  padding: "8px 10px",
+  fontSize: theme.font.size.xs, color: theme.colors.danger,
+};
