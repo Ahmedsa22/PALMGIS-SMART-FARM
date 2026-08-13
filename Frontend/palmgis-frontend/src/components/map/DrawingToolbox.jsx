@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import { LandPlot, TreePalm, AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
 import { createParcelle } from "../../api/parcelles";
 import { createPalm } from "../../api/palms";
 import useMapStore from "../../store/mapStore";
+import { theme } from "../../styles/theme";
+import Button from "../ui/Button";
 
 export default function DrawingToolbox({ map }) {
   const drawRef                         = useRef(null);
@@ -48,13 +51,13 @@ export default function DrawingToolbox({ map }) {
           id: "gl-draw-polygon-fill",
           type: "fill",
           filter: ["all", ["==", "$type", "Polygon"]],
-          paint: { "fill-color": "#2E5E3E", "fill-opacity": 0.3 },
+          paint: { "fill-color": theme.colors.primary, "fill-opacity": 0.3 },
         },
         {
           id: "gl-draw-polygon-stroke",
           type: "line",
           filter: ["all", ["==", "$type", "Polygon"]],
-          paint: { "line-color": "#2E5E3E", "line-width": 2 },
+          paint: { "line-color": theme.colors.primary, "line-width": 2 },
         },
         {
           id: "gl-draw-point",
@@ -62,7 +65,7 @@ export default function DrawingToolbox({ map }) {
           filter: ["all", ["==", "$type", "Point"]],
           paint: {
             "circle-radius": 8,
-            "circle-color": "#B08D57",
+            "circle-color": theme.colors.accent,
             "circle-stroke-width": 2,
             "circle-stroke-color": "#ffffff",
           },
@@ -75,7 +78,7 @@ export default function DrawingToolbox({ map }) {
             "circle-radius": 5,
             "circle-color": "#ffffff",
             "circle-stroke-width": 2,
-            "circle-stroke-color": "#2E5E3E",
+            "circle-stroke-color": theme.colors.primary,
           },
         },
       ],
@@ -157,7 +160,7 @@ export default function DrawingToolbox({ map }) {
         },
       });
 
-      setSuccess("✅ Parcelle créée !");
+      setSuccess("Parcelle créée !");
       drawRef.current?.deleteAll();
       setMode(null);
       setShowForm(false);
@@ -201,7 +204,7 @@ export default function DrawingToolbox({ map }) {
           ? parseInt(nombreRejets) : null,
       });
 
-      setSuccess(`✅ Palmier créé !`);
+      setSuccess("Palmier créé !");
       setNbCrees(prev => prev + 1);
       setGeomDessinee(null);
       setShowForm(false);
@@ -228,47 +231,37 @@ export default function DrawingToolbox({ map }) {
     }
   }
 
-  const btnStyle = (actif, couleur = "#2E5E3E") => ({
-    display: "flex", alignItems: "center", gap: "0.4rem",
-    padding: "0.5rem 0.75rem", borderRadius: "0.5rem",
-    border: `2px solid ${actif ? couleur : "#e5e7eb"}`,
-    backgroundColor: actif ? couleur : "white",
-    color: actif ? "white" : "#374151",
-    cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-    whiteSpace: "nowrap",
+  const toolButtonStyle = (actif, couleur = theme.colors.primary) => ({
+    display: "flex", alignItems: "center", justifyContent: "center",
+    width: 36, height: 36,
+    borderRadius: theme.radius.md,
+    border: `1px solid ${actif ? couleur : theme.colors.border}`,
+    backgroundColor: actif ? couleur : theme.colors.surface,
+    color: actif ? "white" : theme.colors.textSecondary,
+    cursor: "pointer",
+    boxShadow: theme.shadow.sm,
   });
-
-  const inputStyle = {
-    width: "100%", padding: "0.4rem 0.6rem",
-    borderRadius: "0.4rem", border: "1px solid #d1d5db",
-    fontSize: "0.8rem", boxSizing: "border-box",
-    backgroundColor: "white",
-  };
-
-  const labelStyle = {
-    display: "block", fontSize: "0.72rem",
-    fontWeight: 600, color: "#374151", marginBottom: "0.2rem",
-  };
 
   return (
     <>
       {/* ── Barre d'outils ── */}
       <div style={{
         position: "absolute", bottom: "8rem", right: "0.75rem",
-        display: "flex", flexDirection: "column", gap: "0.4rem", zIndex: 10,
+        display: "flex", flexDirection: "column", gap: 6, zIndex: 10,
       }}>
         <button
           onClick={() => mode === "parcelle" ? annulerDessin() : activerDessin("parcelle")}
-          style={btnStyle(mode === "parcelle")}
+          style={toolButtonStyle(mode === "parcelle")}
+          title={mode === "parcelle" ? "Annuler le dessin" : "Nouvelle parcelle"}
         >
-          📐 {mode === "parcelle" ? "Annuler" : "Nouvelle parcelle"}
+          {mode === "parcelle" ? <X size={16} /> : <LandPlot size={16} />}
         </button>
         <button
           onClick={() => mode === "palm" ? annulerDessin() : activerDessin("palm")}
-          style={btnStyle(mode === "palm", "#B08D57")}
+          style={toolButtonStyle(mode === "palm", theme.colors.accent)}
+          title={mode === "palm" ? "Annuler le dessin" : "Nouveau palmier"}
         >
-          🌴 {mode === "palm" ? "Annuler" : "Nouveau palmier"}
+          {mode === "palm" ? <X size={16} /> : <TreePalm size={16} />}
         </button>
       </div>
 
@@ -276,25 +269,28 @@ export default function DrawingToolbox({ map }) {
       {mode && !showForm && (
         <div style={{
           position: "absolute", bottom: "13rem", right: "0.75rem",
-          backgroundColor: "white", borderRadius: "0.6rem",
-          padding: "0.6rem 0.75rem",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          fontSize: "0.78rem", color: "#374151",
-          maxWidth: "200px", zIndex: 10, border: "1px solid #e5e7eb",
+          backgroundColor: theme.colors.surface, borderRadius: theme.radius.md,
+          padding: "10px 12px",
+          boxShadow: theme.shadow.md,
+          fontSize: theme.font.size.sm, color: theme.colors.textSecondary,
+          maxWidth: 200, zIndex: 10, border: `1px solid ${theme.colors.border}`,
         }}>
           {mode === "parcelle" ? (
             <>
-              <strong>Dessiner une parcelle</strong><br />
+              <strong style={{ color: theme.colors.text }}>Dessiner une parcelle</strong><br />
               Cliquez pour placer les points.<br />
               Double-clic pour terminer.
             </>
           ) : (
             <>
-              <strong>Ajouter un palmier</strong><br />
+              <strong style={{ color: theme.colors.text }}>Ajouter un palmier</strong><br />
               Cliquez sur la carte pour placer le palmier.
               {nbCrees > 0 && (
-                <div style={{ marginTop: "0.4rem", color: "#2E5E3E", fontWeight: 600 }}>
-                  ✅ {nbCrees} palmier(s) créé(s)
+                <div style={{
+                  marginTop: 6, color: theme.colors.success, fontWeight: 600,
+                  display: "flex", alignItems: "center", gap: 4,
+                }}>
+                  <CheckCircle2 size={13} /> {nbCrees} palmier(s) créé(s)
                 </div>
               )}
             </>
@@ -307,17 +303,20 @@ export default function DrawingToolbox({ map }) {
         <div style={{
           position: "absolute", top: "50%", left: "50%",
           transform: "translate(-50%, -50%)",
-          backgroundColor: "white", borderRadius: "0.75rem",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-          padding: "1.25rem", width: "300px", zIndex: 20,
+          backgroundColor: theme.colors.surface, borderRadius: theme.radius.lg,
+          boxShadow: theme.shadow.lg,
+          padding: 20, width: 300, zIndex: 20,
           maxHeight: "80vh", overflowY: "auto",
+          border: `1px solid ${theme.colors.border}`,
         }}>
 
           <h3 style={{
-            fontSize: "0.95rem", fontWeight: 700,
-            color: "#2E5E3E", marginBottom: "1rem",
+            display: "flex", alignItems: "center", gap: 8,
+            fontSize: theme.font.size.base, fontWeight: 700,
+            color: theme.colors.text, marginBottom: 16,
           }}>
-            {mode === "parcelle" ? "📐 Nouvelle parcelle" : "🌴 Nouveau palmier"}
+            {mode === "parcelle" ? <LandPlot size={16} /> : <TreePalm size={16} />}
+            {mode === "parcelle" ? "Nouvelle parcelle" : "Nouveau palmier"}
           </h3>
 
           {/* ── Formulaire Parcelle ── */}
@@ -325,7 +324,7 @@ export default function DrawingToolbox({ map }) {
             <form onSubmit={sauvegarderParcelle}>
 
               {/* Nom */}
-              <div style={{ marginBottom: "0.75rem" }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Nom *</label>
                 <input
                   type="text"
@@ -338,25 +337,25 @@ export default function DrawingToolbox({ map }) {
               </div>
 
               {/* Type */}
-              <div style={{ marginBottom: "0.75rem" }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Type</label>
-                <div style={{ display: "flex", gap: "0.4rem" }}>
+                <div style={{ display: "flex", gap: 6 }}>
                   {[
-                    { value: "parcelle", label: "🌿 Parcelle" },
-                    { value: "zone",     label: "📍 Zone"     },
-                    { value: "ferme",    label: "🏡 Ferme"    },
+                    { value: "parcelle", label: "Parcelle" },
+                    { value: "zone",     label: "Zone"     },
+                    { value: "ferme",    label: "Ferme"    },
                   ].map(({ value, label }) => (
                     <button
                       key={value}
                       type="button"
                       onClick={() => setTypeParcelle(value)}
                       style={{
-                        flex: 1, padding: "0.35rem",
-                        borderRadius: "0.4rem",
-                        border: `2px solid ${typeParcelle === value ? "#2E5E3E" : "#e5e7eb"}`,
-                        backgroundColor: typeParcelle === value ? "#2E5E3E" : "white",
-                        color: typeParcelle === value ? "white" : "#374151",
-                        cursor: "pointer", fontSize: "0.72rem", fontWeight: 600,
+                        flex: 1, padding: "6px 4px",
+                        borderRadius: theme.radius.sm,
+                        border: `1px solid ${typeParcelle === value ? theme.colors.primary : theme.colors.border}`,
+                        backgroundColor: typeParcelle === value ? theme.colors.primary : theme.colors.surface,
+                        color: typeParcelle === value ? "white" : theme.colors.textSecondary,
+                        cursor: "pointer", fontSize: theme.font.size.xs, fontWeight: 600,
                       }}
                     >
                       {label}
@@ -366,21 +365,21 @@ export default function DrawingToolbox({ map }) {
               </div>
 
               {/* Statut */}
-              <div style={{ marginBottom: "0.75rem" }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Statut</label>
                 <select
                   value={statutParcelle}
                   onChange={e => setStatutParcelle(e.target.value)}
                   style={inputStyle}
                 >
-                  <option value="active">✅ Active</option>
-                  <option value="en_repos">⏸️ En repos</option>
-                  <option value="abandonnee">❌ Abandonnée</option>
+                  <option value="active">Active</option>
+                  <option value="en_repos">En repos</option>
+                  <option value="abandonnee">Abandonnée</option>
                 </select>
               </div>
 
               {/* Propriétaire */}
-              <div style={{ marginBottom: "1rem" }}>
+              <div style={{ marginBottom: 16 }}>
                 <label style={labelStyle}>Propriétaire</label>
                 <input
                   type="text"
@@ -391,51 +390,21 @@ export default function DrawingToolbox({ map }) {
                 />
               </div>
 
-              {/* Erreur / Succès */}
-              {error && (
-                <div style={{
-                  backgroundColor: "#fef2f2", border: "1px solid #fecaca",
-                  borderRadius: "0.4rem", padding: "0.5rem",
-                  marginBottom: "0.75rem", fontSize: "0.78rem", color: "#dc2626",
-                }}>
-                  ⚠️ {error}
-                </div>
-              )}
-              {success && (
-                <div style={{
-                  backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
-                  borderRadius: "0.4rem", padding: "0.5rem",
-                  marginBottom: "0.75rem", fontSize: "0.78rem", color: "#166534",
-                }}>
-                  {success}
-                </div>
-              )}
+              <FormMessages error={error} success={success} />
 
               {/* Boutons */}
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button
-                  type="button" onClick={annulerDessin}
-                  style={{
-                    flex: 1, padding: "0.5rem", borderRadius: "0.4rem",
-                    backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb",
-                    cursor: "pointer", fontSize: "0.82rem",
-                  }}
-                >
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button type="button" variant="secondary" onClick={annulerDessin} style={{ flex: 1 }}>
                   Annuler
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  variant="primary"
                   disabled={isSubmitting || !nomParcelle.trim()}
-                  style={{
-                    flex: 2, padding: "0.5rem", borderRadius: "0.4rem",
-                    backgroundColor: isSubmitting ? "#9ca3af" : "#2E5E3E",
-                    border: "none", color: "white",
-                    cursor: isSubmitting ? "not-allowed" : "pointer",
-                    fontSize: "0.82rem", fontWeight: 600,
-                  }}
+                  style={{ flex: 2 }}
                 >
-                  {isSubmitting ? "Création..." : "💾 Créer la parcelle"}
-                </button>
+                  {isSubmitting ? "Création..." : "Créer la parcelle"}
+                </Button>
               </div>
             </form>
           )}
@@ -447,15 +416,15 @@ export default function DrawingToolbox({ map }) {
               {/* État sanitaire + État site */}
               <div style={{
                 display: "grid", gridTemplateColumns: "1fr 1fr",
-                gap: "0.5rem", marginBottom: "0.75rem",
+                gap: 8, marginBottom: 12,
               }}>
                 <div>
                   <label style={labelStyle}>État sanitaire</label>
                   <select value={etatSante} onChange={e => setEtatSante(e.target.value)} style={inputStyle}>
-                    <option value="B">✅ Bon</option>
-                    <option value="MO">⚠️ Moyen</option>
-                    <option value="MA">🔴 Mauvais</option>
-                    <option value="MR">💀 Mort</option>
+                    <option value="B">Bon</option>
+                    <option value="MO">Moyen</option>
+                    <option value="MA">Mauvais</option>
+                    <option value="MR">Mort</option>
                   </select>
                 </div>
                 <div>
@@ -472,7 +441,7 @@ export default function DrawingToolbox({ map }) {
               {etatSite !== "V" ? (
                 <div style={{
                   display: "grid", gridTemplateColumns: "1fr 1fr",
-                  gap: "0.5rem", marginBottom: "0.75rem",
+                  gap: 8, marginBottom: 12,
                 }}>
                   <div>
                     <label style={labelStyle}>Sexe</label>
@@ -492,16 +461,18 @@ export default function DrawingToolbox({ map }) {
                 </div>
               ) : (
                 <div style={{
-                  backgroundColor: "#f9fafb", border: "1px solid #e5e7eb",
-                  borderRadius: "0.4rem", padding: "0.5rem",
-                  fontSize: "0.78rem", color: "#6b7280", marginBottom: "0.75rem",
+                  display: "flex", alignItems: "flex-start", gap: 6,
+                  backgroundColor: theme.colors.bg, border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.radius.sm, padding: 8,
+                  fontSize: theme.font.size.xs, color: theme.colors.textSecondary, marginBottom: 12,
                 }}>
-                  ℹ️ Site vide — sexe et âge non applicables
+                  <Info size={13} style={{ flexShrink: 0, marginTop: 1 }} />
+                  Site vide — sexe et âge non applicables
                 </div>
               )}
 
               {/* Variété */}
-              <div style={{ marginBottom: "0.75rem" }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Variété</label>
                 <input
                   type="text" value={varietePalm}
@@ -514,7 +485,7 @@ export default function DrawingToolbox({ map }) {
               {/* Ligne + Numéro */}
               <div style={{
                 display: "grid", gridTemplateColumns: "1fr 1fr",
-                gap: "0.5rem", marginBottom: "0.75rem",
+                gap: 8, marginBottom: 12,
               }}>
                 <div>
                   <label style={labelStyle}>Ligne</label>
@@ -529,7 +500,7 @@ export default function DrawingToolbox({ map }) {
               </div>
 
               {/* Code local */}
-              <div style={{ marginBottom: "0.75rem" }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Code local</label>
                 <input type="text" value={codeLocalPalm}
                   onChange={e => setCodeLocalPalm(e.target.value)} style={inputStyle} />
@@ -537,10 +508,10 @@ export default function DrawingToolbox({ map }) {
 
               {/* Nombre de rejets */}
               {etatSite === "TOF" && (
-                <div style={{ marginBottom: "0.75rem" }}>
+                <div style={{ marginBottom: 12 }}>
                   <label style={labelStyle}>
                     Nombre de rejets
-                    <span style={{ fontSize: "0.7rem", color: "#6b7280", fontWeight: 400, marginLeft: "0.4rem" }}>
+                    <span style={{ fontSize: "10px", color: theme.colors.textMuted, fontWeight: 400, marginLeft: 6 }}>
                       (touffes uniquement)
                     </span>
                   </label>
@@ -553,52 +524,24 @@ export default function DrawingToolbox({ map }) {
                 </div>
               )}
 
-              {/* Succès */}
-              {success && (
-                <div style={{
-                  backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
-                  borderRadius: "0.4rem", padding: "0.5rem",
-                  marginBottom: "0.75rem", fontSize: "0.78rem", color: "#166534",
-                }}>
-                  {success} {nbCrees > 0 && `(${nbCrees} créé(s))`}
-                </div>
-              )}
-
-              {/* Erreur */}
-              {error && (
-                <div style={{
-                  backgroundColor: "#fef2f2", border: "1px solid #fecaca",
-                  borderRadius: "0.4rem", padding: "0.5rem",
-                  marginBottom: "0.75rem", fontSize: "0.78rem", color: "#dc2626",
-                }}>
-                  ⚠️ {error}
-                </div>
-              )}
+              <FormMessages
+                error={error}
+                success={success && `${success}${nbCrees > 0 ? ` (${nbCrees} créé(s))` : ""}`}
+              />
 
               {/* Boutons */}
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button
-                  type="button" onClick={annulerDessin}
-                  style={{
-                    flex: 1, padding: "0.5rem", borderRadius: "0.4rem",
-                    backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb",
-                    cursor: "pointer", fontSize: "0.82rem",
-                  }}
-                >
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button type="button" variant="secondary" onClick={annulerDessin} style={{ flex: 1 }}>
                   Annuler
-                </button>
-                <button
-                  type="submit" disabled={isSubmitting}
-                  style={{
-                    flex: 2, padding: "0.5rem", borderRadius: "0.4rem",
-                    backgroundColor: isSubmitting ? "#9ca3af" : "#B08D57",
-                    border: "none", color: "white",
-                    cursor: isSubmitting ? "not-allowed" : "pointer",
-                    fontSize: "0.82rem", fontWeight: 600,
-                  }}
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isSubmitting}
+                  style={{ flex: 2, backgroundColor: theme.colors.accent }}
                 >
-                  {isSubmitting ? "Création..." : "💾 Créer le palmier"}
-                </button>
+                  {isSubmitting ? "Création..." : "Créer le palmier"}
+                </Button>
               </div>
             </form>
           )}
@@ -607,3 +550,49 @@ export default function DrawingToolbox({ map }) {
     </>
   );
 }
+
+function FormMessages({ error, success }) {
+  return (
+    <>
+      {error && (
+        <div style={{
+          display: "flex", alignItems: "flex-start", gap: 6,
+          borderLeft: `3px solid ${theme.colors.danger}`,
+          backgroundColor: "#FEF2F2",
+          borderRadius: theme.radius.sm,
+          padding: "8px 10px",
+          marginBottom: 12, fontSize: theme.font.size.xs, color: theme.colors.danger,
+        }}>
+          <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+          {error}
+        </div>
+      )}
+      {success && (
+        <div style={{
+          display: "flex", alignItems: "flex-start", gap: 6,
+          borderLeft: `3px solid ${theme.colors.success}`,
+          backgroundColor: "#F0FDF4",
+          borderRadius: theme.radius.sm,
+          padding: "8px 10px",
+          marginBottom: 12, fontSize: theme.font.size.xs, color: theme.colors.success,
+        }}>
+          <CheckCircle2 size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+          {success}
+        </div>
+      )}
+    </>
+  );
+}
+
+const inputStyle = {
+  width: "100%", padding: "8px 10px",
+  borderRadius: theme.radius.md, border: `1px solid ${theme.colors.borderStrong}`,
+  fontSize: theme.font.size.sm, boxSizing: "border-box",
+  backgroundColor: theme.colors.surface, outline: "none",
+  fontFamily: theme.font.family,
+};
+
+const labelStyle = {
+  display: "block", fontSize: theme.font.size.xs,
+  fontWeight: 600, color: theme.colors.textSecondary, marginBottom: 4,
+};
