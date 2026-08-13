@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Users, Plus, ChevronLeft, X, CheckCircle2, AlertTriangle,
+  ArrowUp, ArrowDown, Ban, Check,
+} from "lucide-react";
 import api from "../api/axios";
 import useAuthStore from "../store/authStore";
 import Navbar from "../components/layout/Navbar";
+import { theme } from "../styles/theme";
+import Button from "../components/ui/Button";
 
 export default function UsersPage() {
   const navigate = useNavigate();
@@ -43,10 +49,10 @@ export default function UsersPage() {
   async function handleChangerRole(userId, nouveauRole) {
     try {
       await api.patch(`/users/${userId}/role/`, { role: nouveauRole });
-      setMessage("✅ Rôle mis à jour");
+      setMessage({ type: "success", text: "Rôle mis à jour" });
       charger();
     } catch (err) {
-      setMessage("❌ Erreur lors de la mise à jour");
+      setMessage({ type: "error", text: "Erreur lors de la mise à jour" });
     }
     setTimeout(() => setMessage(null), 3000);
   }
@@ -54,10 +60,10 @@ export default function UsersPage() {
   async function handleToggleActif(userId, isActive) {
     try {
       await api.patch(`/users/${userId}/role/`, { is_active: !isActive });
-      setMessage(`✅ Compte ${!isActive ? "activé" : "désactivé"}`);
+      setMessage({ type: "success", text: `Compte ${!isActive ? "activé" : "désactivé"}` });
       charger();
     } catch (err) {
-      setMessage("❌ Erreur");
+      setMessage({ type: "error", text: "Erreur" });
     }
     setTimeout(() => setMessage(null), 3000);
   }
@@ -84,7 +90,7 @@ export default function UsersPage() {
         }
       }
 
-      setMessage(`✅ Utilisateur ${newUsername} créé avec succès`);
+      setMessage({ type: "success", text: `Utilisateur ${newUsername} créé avec succès` });
       setShowAjout(false);
       setNewUsername("");
       setNewEmail("");
@@ -96,164 +102,155 @@ export default function UsersPage() {
       const msg  = data
         ? Object.values(data).flat().join(" ")
         : "Erreur lors de la création.";
-      setMessage(`❌ ${msg}`);
+      setMessage({ type: "error", text: msg });
     } finally {
       setIsCreating(false);
     }
   }
 
-  const inputStyle = {
-    width: "100%", padding: "0.5rem",
-    borderRadius: "0.4rem", border: "1px solid #d1d5db",
-    fontSize: "0.82rem", boxSizing: "border-box",
-  };
-
-  const labelStyle = {
-    display: "block", fontSize: "0.78rem",
-    fontWeight: 600, color: "#374151", marginBottom: "0.2rem",
-  };
-
   return (
     <div style={{
       display: "flex", flexDirection: "column",
-      height: "100vh", backgroundColor: "#f9fafb",
-      overflow: "hidden",
+      height: "100vh", backgroundColor: theme.colors.bg,
+      overflow: "hidden", fontFamily: theme.font.family,
     }}>
       <Navbar />
 
       {/* En-tête */}
       <div style={{
-        backgroundColor: "white", padding: "1rem 1.5rem",
-        borderBottom: "1px solid #e5e7eb",
+        backgroundColor: theme.colors.surface, padding: "16px 24px",
+        borderBottom: `1px solid ${theme.colors.border}`,
         display: "flex", justifyContent: "space-between",
         alignItems: "center", flexShrink: 0,
       }}>
         <div>
-          <h1 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#2E5E3E" }}>
-            👥 Gestion des utilisateurs
+          <h1 style={{
+            display: "flex", alignItems: "center", gap: 8,
+            fontSize: theme.font.size.lg, fontWeight: 700, color: theme.colors.text,
+          }}>
+            <Users size={18} color={theme.colors.primary} /> Gestion des utilisateurs
           </h1>
-          <p style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: "0.1rem" }}>
+          <p style={{ fontSize: theme.font.size.sm, color: theme.colors.textMuted, marginTop: 2 }}>
             {users.length} utilisateur(s)
           </p>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button
-            onClick={() => setShowAjout(true)}
-            style={{
-              padding: "0.5rem 0.75rem", borderRadius: "0.5rem",
-              backgroundColor: "#2E5E3E", border: "none",
-              cursor: "pointer", fontSize: "0.8rem",
-              color: "white", fontWeight: 600,
-            }}
-          >
-            ➕ Ajouter
-          </button>
-          <button
-            onClick={() => navigate("/map")}
-            style={{
-              padding: "0.5rem 0.75rem", borderRadius: "0.5rem",
-              backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb",
-              cursor: "pointer", fontSize: "0.8rem", color: "#374151",
-            }}
-          >
-            ← Carte
-          </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button variant="primary" icon={Plus} fullWidth={false} onClick={() => setShowAjout(true)}>
+            Ajouter
+          </Button>
+          <Button variant="secondary" icon={ChevronLeft} fullWidth={false} onClick={() => navigate("/map")}>
+            Carte
+          </Button>
         </div>
       </div>
 
       {/* Message flash */}
       {message && (
         <div style={{
-          backgroundColor: message.startsWith("✅") ? "#f0fdf4" : "#fef2f2",
-          border: `1px solid ${message.startsWith("✅") ? "#bbf7d0" : "#fecaca"}`,
-          color: message.startsWith("✅") ? "#166534" : "#dc2626",
-          padding: "0.6rem 1.5rem", fontSize: "0.85rem",
+          display: "flex", alignItems: "center", gap: 6,
+          backgroundColor: message.type === "success" ? "#F0FDF4" : "#FEF2F2",
+          borderLeft: `3px solid ${message.type === "success" ? theme.colors.success : theme.colors.danger}`,
+          color: message.type === "success" ? theme.colors.success : theme.colors.danger,
+          padding: "10px 24px", fontSize: theme.font.size.sm,
           fontWeight: 500, flexShrink: 0,
         }}>
-          {message}
+          {message.type === "success" ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
+          {message.text}
         </div>
       )}
 
       {/* Liste utilisateurs */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
         {isLoading ? (
-          <p style={{ textAlign: "center", color: "#9ca3af", padding: "2rem" }}>
+          <p style={{ textAlign: "center", color: theme.colors.textMuted, padding: 32 }}>
             Chargement...
           </p>
         ) : users.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#9ca3af", padding: "2rem" }}>
+          <p style={{ textAlign: "center", color: theme.colors.textMuted, padding: 32 }}>
             Aucun autre utilisateur.
           </p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {users.map(u => (
-              <div key={u.id} style={{
-                backgroundColor: "white",
-                borderRadius: "0.75rem", padding: "1rem",
-                border: `1px solid ${u.is_active ? "#e5e7eb" : "#fecaca"}`,
-                display: "flex", justifyContent: "space-between",
-                alignItems: "center",
-              }}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#1f2937" }}>
-                      {u.username}
-                    </span>
-                    <span style={{
-                      fontSize: "0.7rem", fontWeight: 600,
-                      padding: "0.15rem 0.5rem", borderRadius: "1rem",
-                      backgroundColor: u.role === "manager" ? "#f0fdf4" : "#eff6ff",
-                      color: u.role === "manager" ? "#166534" : "#1e40af",
-                    }}>
-                      {u.role === "manager" ? "⚙️ Manager" : "👁️ Viewer"}
-                    </span>
-                    {!u.is_active && (
+          <div style={{
+            overflowX: "auto", backgroundColor: theme.colors.surface,
+            border: `1px solid ${theme.colors.border}`, borderRadius: theme.radius.lg,
+          }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: theme.font.size.sm }}>
+              <thead>
+                <tr>
+                  {["Utilisateur", "Rôle", "Statut", "Email", "Inscrit le", "Actions"].map(col => (
+                    <th key={col} style={thStyle}>{col}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr
+                    key={u.id}
+                    style={{ borderBottom: `1px solid ${theme.colors.border}` }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = theme.colors.bg}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
+                  >
+                    <td style={{ ...tdStyle, fontWeight: 600 }}>{u.username}</td>
+                    <td style={tdStyle}>
                       <span style={{
-                        fontSize: "0.7rem", fontWeight: 600,
-                        padding: "0.15rem 0.5rem", borderRadius: "1rem",
-                        backgroundColor: "#fef2f2", color: "#dc2626",
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        fontSize: theme.font.size.xs, fontWeight: 600,
+                        textTransform: "uppercase", letterSpacing: "0.5px",
+                        color: theme.colors.textSecondary,
                       }}>
-                        Désactivé
+                        <span style={{
+                          width: 6, height: 6, borderRadius: "50%",
+                          backgroundColor: u.role === "manager" ? theme.colors.accent : theme.colors.info,
+                        }} />
+                        {u.role === "manager" ? "Manager" : "Viewer"}
                       </span>
-                    )}
-                  </div>
-                  <p style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "0.2rem" }}>
-                    {u.email || "Pas d'email"} — Inscrit le {u.date_joined}
-                  </p>
-                </div>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        fontSize: theme.font.size.xs, fontWeight: 600,
+                        textTransform: "uppercase", letterSpacing: "0.5px",
+                        color: u.is_active ? theme.colors.success : theme.colors.danger,
+                      }}>
+                        <span style={{
+                          width: 6, height: 6, borderRadius: "50%",
+                          backgroundColor: u.is_active ? theme.colors.success : theme.colors.danger,
+                        }} />
+                        {u.is_active ? "Actif" : "Désactivé"}
+                      </span>
+                    </td>
+                    <td style={{ ...tdStyle, color: theme.colors.textMuted }}>
+                      {u.email || "—"}
+                    </td>
+                    <td style={{ ...tdStyle, color: theme.colors.textMuted, whiteSpace: "nowrap" }}>
+                      {u.date_joined}
+                    </td>
+                    <td style={tdStyle}>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button
+                          onClick={() => handleChangerRole(
+                            u.id,
+                            u.role === "manager" ? "viewer" : "manager"
+                          )}
+                          style={u.role === "manager" ? dangerActionStyle : primaryActionStyle}
+                        >
+                          {u.role === "manager" ? <ArrowDown size={11} /> : <ArrowUp size={11} />}
+                          {u.role === "manager" ? "Viewer" : "Manager"}
+                        </button>
 
-                <div style={{ display: "flex", gap: "0.4rem" }}>
-                  <button
-                    onClick={() => handleChangerRole(
-                      u.id,
-                      u.role === "manager" ? "viewer" : "manager"
-                    )}
-                    style={{
-                      padding: "0.4rem 0.6rem", borderRadius: "0.4rem",
-                      backgroundColor: u.role === "manager" ? "#fef2f2" : "#f0fdf4",
-                      border: `1px solid ${u.role === "manager" ? "#fecaca" : "#bbf7d0"}`,
-                      color: u.role === "manager" ? "#dc2626" : "#166534",
-                      cursor: "pointer", fontSize: "0.78rem", fontWeight: 600,
-                    }}
-                  >
-                    {u.role === "manager" ? "⬇️ Viewer" : "⬆️ Manager"}
-                  </button>
-
-                  <button
-                    onClick={() => handleToggleActif(u.id, u.is_active)}
-                    style={{
-                      padding: "0.4rem 0.6rem", borderRadius: "0.4rem",
-                      backgroundColor: u.is_active ? "#fef2f2" : "#f0fdf4",
-                      border: `1px solid ${u.is_active ? "#fecaca" : "#bbf7d0"}`,
-                      color: u.is_active ? "#dc2626" : "#166534",
-                      cursor: "pointer", fontSize: "0.78rem", fontWeight: 600,
-                    }}
-                  >
-                    {u.is_active ? "🚫 Désactiver" : "✅ Activer"}
-                  </button>
-                </div>
-              </div>
-            ))}
+                        <button
+                          onClick={() => handleToggleActif(u.id, u.is_active)}
+                          style={u.is_active ? dangerActionStyle : primaryActionStyle}
+                        >
+                          {u.is_active ? <Ban size={11} /> : <Check size={11} />}
+                          {u.is_active ? "Désactiver" : "Activer"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -265,42 +262,41 @@ export default function UsersPage() {
             onClick={() => setShowAjout(false)}
             style={{
               position: "fixed", inset: 0,
-              backgroundColor: "rgba(0,0,0,0.5)", zIndex: 40,
+              backgroundColor: "rgba(15,23,42,0.5)", zIndex: 40,
             }}
           />
           <div style={{
             position: "fixed",
             top: "50%", left: "50%",
             transform: "translate(-50%, -50%)",
-            backgroundColor: "white",
-            borderRadius: "0.75rem",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            padding: "1.5rem",
-            width: "360px",
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.radius.lg,
+            boxShadow: theme.shadow.lg,
+            border: `1px solid ${theme.colors.border}`,
+            padding: 24,
+            width: 360,
             zIndex: 50,
+            fontFamily: theme.font.family,
           }}>
 
             <div style={{
               display: "flex", justifyContent: "space-between",
-              alignItems: "center", marginBottom: "1.25rem",
+              alignItems: "center", marginBottom: 20,
             }}>
-              <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#2E5E3E" }}>
-                ➕ Nouvel utilisateur
+              <h2 style={{
+                display: "flex", alignItems: "center", gap: 6,
+                fontSize: theme.font.size.base, fontWeight: 700, color: theme.colors.text,
+              }}>
+                <Plus size={16} color={theme.colors.primary} /> Nouvel utilisateur
               </h2>
-              <button
-                onClick={() => setShowAjout(false)}
-                style={{
-                  background: "none", border: "none",
-                  cursor: "pointer", fontSize: "1.2rem", color: "#9ca3af",
-                }}
-              >
-                ✕
+              <button onClick={() => setShowAjout(false)} style={closeButtonStyle}>
+                <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleCreerUtilisateur}>
 
-              <div style={{ marginBottom: "0.75rem" }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Nom d'utilisateur *</label>
                 <input
                   type="text"
@@ -312,7 +308,7 @@ export default function UsersPage() {
                 />
               </div>
 
-              <div style={{ marginBottom: "0.75rem" }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Email</label>
                 <input
                   type="email"
@@ -323,7 +319,7 @@ export default function UsersPage() {
                 />
               </div>
 
-              <div style={{ marginBottom: "0.75rem" }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Mot de passe *</label>
                 <input
                   type="password"
@@ -335,24 +331,24 @@ export default function UsersPage() {
                 />
               </div>
 
-              <div style={{ marginBottom: "1.25rem" }}>
+              <div style={{ marginBottom: 20 }}>
                 <label style={labelStyle}>Rôle</label>
-                <div style={{ display: "flex", gap: "0.5rem" }}>
+                <div style={{ display: "flex", gap: 8 }}>
                   {[
-                    { value: "viewer",  label: "👁️ Viewer"  },
-                    { value: "manager", label: "⚙️ Manager" },
+                    { value: "viewer",  label: "Viewer"  },
+                    { value: "manager", label: "Manager" },
                   ].map(({ value, label }) => (
                     <button
                       key={value}
                       type="button"
                       onClick={() => setNewRole(value)}
                       style={{
-                        flex: 1, padding: "0.5rem",
-                        borderRadius: "0.4rem",
-                        border: `2px solid ${newRole === value ? "#2E5E3E" : "#e5e7eb"}`,
-                        backgroundColor: newRole === value ? "#2E5E3E" : "white",
-                        color: newRole === value ? "white" : "#374151",
-                        cursor: "pointer", fontSize: "0.82rem", fontWeight: 600,
+                        flex: 1, padding: "8px",
+                        borderRadius: theme.radius.md,
+                        border: `1px solid ${newRole === value ? theme.colors.primary : theme.colors.border}`,
+                        backgroundColor: newRole === value ? theme.colors.primary : theme.colors.surface,
+                        color: newRole === value ? "white" : theme.colors.textSecondary,
+                        cursor: "pointer", fontSize: theme.font.size.sm, fontWeight: 600,
                       }}
                     >
                       {label}
@@ -361,32 +357,13 @@ export default function UsersPage() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button
-                  type="button"
-                  onClick={() => setShowAjout(false)}
-                  style={{
-                    flex: 1, padding: "0.6rem", borderRadius: "0.4rem",
-                    backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb",
-                    cursor: "pointer", fontSize: "0.82rem",
-                    color: "#374151", fontWeight: 600,
-                  }}
-                >
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button type="button" variant="secondary" onClick={() => setShowAjout(false)} style={{ flex: 1 }}>
                   Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={isCreating}
-                  style={{
-                    flex: 2, padding: "0.6rem", borderRadius: "0.4rem",
-                    backgroundColor: isCreating ? "#9ca3af" : "#2E5E3E",
-                    border: "none", color: "white",
-                    cursor: isCreating ? "not-allowed" : "pointer",
-                    fontSize: "0.82rem", fontWeight: 600,
-                  }}
-                >
-                  {isCreating ? "Création..." : "✅ Créer"}
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" disabled={isCreating} style={{ flex: 2 }}>
+                  {isCreating ? "Création..." : "Créer"}
+                </Button>
               </div>
 
             </form>
@@ -397,3 +374,54 @@ export default function UsersPage() {
     </div>
   );
 }
+
+const inputStyle = {
+  width: "100%", padding: "8px 10px",
+  borderRadius: theme.radius.md, border: `1px solid ${theme.colors.borderStrong}`,
+  fontSize: theme.font.size.sm, boxSizing: "border-box",
+  backgroundColor: theme.colors.surface, outline: "none",
+  fontFamily: theme.font.family,
+};
+
+const labelStyle = {
+  display: "block", fontSize: theme.font.size.xs,
+  fontWeight: 600, color: theme.colors.textSecondary, marginBottom: 4,
+};
+
+const closeButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "none", border: "none",
+  cursor: "pointer", color: theme.colors.textMuted,
+  width: 28, height: 28,
+};
+
+const thStyle = {
+  padding: "10px 12px", textAlign: "left",
+  fontSize: "11px", fontWeight: 600,
+  color: theme.colors.textMuted, textTransform: "uppercase",
+  letterSpacing: "0.5px",
+  borderBottom: `1px solid ${theme.colors.border}`,
+};
+
+const tdStyle = {
+  padding: "10px 12px", color: theme.colors.text,
+};
+
+const actionButtonBase = {
+  display: "flex", alignItems: "center", gap: 4,
+  padding: "4px 8px", borderRadius: theme.radius.sm,
+  cursor: "pointer", fontSize: theme.font.size.xs, fontWeight: 600,
+  backgroundColor: "transparent",
+};
+
+const primaryActionStyle = {
+  ...actionButtonBase,
+  border: `1px solid ${theme.colors.success}`,
+  color: theme.colors.success,
+};
+
+const dangerActionStyle = {
+  ...actionButtonBase,
+  border: `1px solid ${theme.colors.danger}`,
+  color: theme.colors.danger,
+};
