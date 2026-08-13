@@ -1,5 +1,9 @@
 import { useState } from "react";
+import { TreePalm, X, AlertTriangle, Info } from "lucide-react";
 import { updatePalm } from "../../api/palms";
+import { theme } from "../../styles/theme";
+import Button from "../ui/Button";
+import { SectionTitle } from "../ui/Badge";
 
 export default function PalmEditForm({ palm, onSuccess, onCancel }) {
   const p = palm.properties;
@@ -47,61 +51,34 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
     }
   }
 
-  const inputStyle = {
-    width: "100%", padding: "0.5rem",
-    borderRadius: "0.4rem", border: "1px solid #d1d5db",
-    fontSize: "0.82rem", boxSizing: "border-box",
-    backgroundColor: "white",
-  };
-
-  const labelStyle = {
-    display: "block", fontSize: "0.75rem",
-    fontWeight: 600, color: "#374151", marginBottom: "0.2rem",
-  };
-
-  const rowStyle = {
-    display: "grid", gridTemplateColumns: "1fr 1fr",
-    gap: "0.5rem", marginBottom: "0.75rem",
-  };
-
   const [nombreRejets, setNombreRejets] = useState(
   p.nombre_rejets ?? ""
   );
 
   return (
-    <div style={{ padding: "1rem" }}>
+    <div style={{ padding: 16 }}>
 
       {/* En-tête */}
       <div style={{
         display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "1rem",
+        alignItems: "center", marginBottom: 16,
       }}>
         <div>
-          <p style={{
-            fontSize: "0.7rem", color: "#9ca3af",
-            textTransform: "uppercase", fontWeight: 600,
-          }}>
-            Modifier
-          </p>
+          <SectionTitle style={{ marginBottom: 4 }}>Modifier</SectionTitle>
           <h2 style={{
-            fontSize: "1rem", fontWeight: "bold", color: "#2E5E3E",
+            fontSize: theme.font.size.base, fontWeight: 700, color: theme.colors.text,
+            display: "flex", alignItems: "center", gap: 6,
           }}>
-            🌴 {p.code_uni}
+            <TreePalm size={16} color={theme.colors.primary} /> {p.code_uni}
           </h2>
         </div>
-        <button
-          onClick={onCancel}
-          style={{
-            background: "none", border: "none",
-            cursor: "pointer", fontSize: "1.2rem", color: "#9ca3af",
-          }}
-        >
-          ✕
+        <button onClick={onCancel} style={closeButtonStyle}>
+          <X size={18} />
         </button>
       </div>
 
       <form onSubmit={handleSubmit}
-        style={{ maxHeight: "60vh", overflowY: "auto", paddingRight: "0.25rem" }}
+        style={{ maxHeight: "60vh", overflowY: "auto", paddingRight: 4 }}
       >
 
         {/* État sanitaire + État site */}
@@ -109,10 +86,10 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
           <div>
             <label style={labelStyle}>État sanitaire</label>
             <select value={etatSante} onChange={(e) => setEtatSante(e.target.value)} style={inputStyle}>
-              <option value="B">✅ Bon</option>
-              <option value="MO">⚠️ Moyen</option>
-              <option value="MA">🔴 Mauvais</option>
-              <option value="MR">💀 Mort</option>
+              <option value="B">Bon</option>
+              <option value="MO">Moyen</option>
+              <option value="MA">Mauvais</option>
+              <option value="MR">Mort</option>
             </select>
           </div>
           <div>
@@ -125,7 +102,7 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
           </div>
         </div>
 
-      
+
         {/* Sexe + Âge — cachés si site vide */}
         {etatSite !== "V" ? (
           <div style={rowStyle}>
@@ -154,21 +131,14 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
             </div>
           </div>
         ) : (
-          <div style={{
-            backgroundColor: "#f9fafb",
-            border: "1px solid #e5e7eb",
-            borderRadius: "0.4rem",
-            padding: "0.5rem 0.75rem",
-            fontSize: "0.78rem",
-            color: "#6b7280",
-            marginBottom: "0.75rem",
-          }}>
-            ℹ️ Site vide — sexe et âge non applicables
+          <div style={infoBoxStyle}>
+            <Info size={13} style={{ flexShrink: 0, marginTop: 1 }} />
+            Site vide — sexe et âge non applicables
           </div>
         )}
 
         {/* Variété */}
-        <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ marginBottom: 12 }}>
           <label style={labelStyle}>Variété</label>
           <input
             type="text"
@@ -202,7 +172,7 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
         </div>
 
         {/* Code local */}
-        <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ marginBottom: 12 }}>
           <label style={labelStyle}>Code local</label>
           <input
             type="text"
@@ -213,7 +183,7 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
         </div>
 
         {/* Description */}
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ marginBottom: 16 }}>
           <label style={labelStyle}>Observations</label>
           <textarea
             value={description}
@@ -226,12 +196,12 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
 
         {/* Nombre de rejets — uniquement pour les touffes */}
         {etatSite === "TOF" && (
-        <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ marginBottom: 12 }}>
             <label style={labelStyle}>
             Nombre de rejets
             <span style={{
-                fontSize: "0.7rem", color: "#6b7280",
-                fontWeight: 400, marginLeft: "0.4rem"
+                fontSize: "10px", color: theme.colors.textMuted,
+                fontWeight: 400, marginLeft: 6,
             }}>
                 (touffes uniquement)
             </span>
@@ -250,45 +220,68 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
 
         {/* Erreur */}
         {error && (
-          <div style={{
-            backgroundColor: "#fef2f2", border: "1px solid #fecaca",
-            borderRadius: "0.4rem", padding: "0.5rem",
-            marginBottom: "0.75rem", fontSize: "0.8rem", color: "#dc2626",
-          }}>
-            ⚠️ {error}
+          <div style={errorBoxStyle}>
+            <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+            {error}
           </div>
         )}
 
         {/* Boutons */}
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{
-              flex: 1, padding: "0.6rem", borderRadius: "0.4rem",
-              backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb",
-              cursor: "pointer", fontSize: "0.82rem",
-              color: "#374151", fontWeight: 600,
-            }}
-          >
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button type="button" variant="secondary" onClick={onCancel} style={{ flex: 1 }}>
             Annuler
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{
-              flex: 2, padding: "0.6rem", borderRadius: "0.4rem",
-              backgroundColor: isSubmitting ? "#9ca3af" : "#2E5E3E",
-              border: "none",
-              cursor: isSubmitting ? "not-allowed" : "pointer",
-              fontSize: "0.82rem", color: "white", fontWeight: 600,
-            }}
-          >
-            {isSubmitting ? "Enregistrement..." : "💾 Enregistrer"}
-          </button>
+          </Button>
+          <Button type="submit" variant="primary" disabled={isSubmitting} style={{ flex: 2 }}>
+            {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+          </Button>
         </div>
 
       </form>
     </div>
   );
 }
+
+const inputStyle = {
+  width: "100%", padding: "8px 10px",
+  borderRadius: theme.radius.md, border: `1px solid ${theme.colors.borderStrong}`,
+  fontSize: theme.font.size.sm, boxSizing: "border-box",
+  backgroundColor: theme.colors.surface, outline: "none",
+  fontFamily: theme.font.family,
+};
+
+const labelStyle = {
+  display: "block", fontSize: theme.font.size.xs,
+  fontWeight: 600, color: theme.colors.textSecondary, marginBottom: 4,
+};
+
+const rowStyle = {
+  display: "grid", gridTemplateColumns: "1fr 1fr",
+  gap: 8, marginBottom: 12,
+};
+
+const closeButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "none", border: "none",
+  cursor: "pointer", color: theme.colors.textMuted,
+  width: 28, height: 28,
+};
+
+const infoBoxStyle = {
+  display: "flex", alignItems: "flex-start", gap: 6,
+  backgroundColor: theme.colors.bg,
+  border: `1px solid ${theme.colors.border}`,
+  borderRadius: theme.radius.sm,
+  padding: "8px 10px",
+  fontSize: theme.font.size.xs,
+  color: theme.colors.textSecondary,
+  marginBottom: 12,
+};
+
+const errorBoxStyle = {
+  display: "flex", alignItems: "flex-start", gap: 6,
+  borderLeft: `3px solid ${theme.colors.danger}`,
+  backgroundColor: "#FEF2F2",
+  borderRadius: theme.radius.sm,
+  padding: "8px 10px",
+  marginBottom: 12, fontSize: theme.font.size.xs, color: theme.colors.danger,
+};

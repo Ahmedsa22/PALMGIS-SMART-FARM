@@ -1,5 +1,8 @@
 import { useState, useRef } from "react";
+import { Upload, X, FileUp, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { importParcelles } from "../../api/parcelles";
+import { theme } from "../../styles/theme";
+import Button from "../ui/Button";
 
 export default function ParcelleImport({ onSuccess, onCancel }) {
   const [fichier, setFichier]           = useState(null);
@@ -70,37 +73,33 @@ export default function ParcelleImport({ onSuccess, onCancel }) {
   }
 
   return (
-    <div style={{ padding: "1rem" }}>
+    <div style={{ padding: 16 }}>
 
       {/* En-tête */}
       <div style={{
         display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "1rem"
+        alignItems: "center", marginBottom: 16,
       }}>
-        <h2 style={{ fontWeight: "bold", color: "#2E5E3E", fontSize: "0.95rem" }}>
-          📂 Importer des parcelles
+        <h2 style={{
+          display: "flex", alignItems: "center", gap: 6,
+          fontWeight: 700, color: theme.colors.text, fontSize: theme.font.size.base,
+        }}>
+          <Upload size={16} color={theme.colors.primary} /> Importer des parcelles
         </h2>
-        <button
-          onClick={onCancel}
-          style={{
-            background: "none", border: "none",
-            cursor: "pointer", fontSize: "1.2rem", color: "#9ca3af"
-          }}
-        >
-          ✕
+        <button onClick={onCancel} style={closeButtonStyle}>
+          <X size={18} />
         </button>
       </div>
 
       {/* Info format */}
-      <div style={{
-        backgroundColor: "#eff6ff", border: "1px solid #bfdbfe",
-        borderRadius: "0.5rem", padding: "0.6rem 0.75rem",
-        marginBottom: "1rem", fontSize: "0.78rem", color: "#1e40af"
-      }}>
-        <strong>Formats acceptés :</strong><br />
-        • <strong>.zip</strong> contenant .shp + .shx + .dbf + .prj<br />
-        • <strong>.geojson</strong> en WGS84 (EPSG:4326)<br />
-        • Shapefile en <strong>EPSG:26192</strong> → reprojection automatique
+      <div style={infoBoxStyle}>
+        <Info size={13} style={{ flexShrink: 0, marginTop: 2 }} />
+        <span>
+          <strong>Formats acceptés :</strong><br />
+          .zip contenant .shp + .shx + .dbf + .prj<br />
+          .geojson en WGS84 (EPSG:4326)<br />
+          Shapefile en EPSG:26192 → reprojection automatique
+        </span>
       </div>
 
       {/* Zone de drop */}
@@ -109,14 +108,13 @@ export default function ParcelleImport({ onSuccess, onCancel }) {
         onDragOver={(e) => e.preventDefault()}
         onClick={() => inputRef.current?.click()}
         style={{
-          border: `2px dashed ${fichier ? "#2E5E3E" : "#d1d5db"}`,
-          borderRadius: "0.75rem",
-          padding: "1.5rem",
+          border: `2px dashed ${fichier ? theme.colors.primary : theme.colors.borderStrong}`,
+          borderRadius: theme.radius.lg,
+          padding: 24,
           textAlign: "center",
           cursor: "pointer",
-          backgroundColor: fichier ? "#f0fdf4" : "#f9fafb",
-          transition: "all 0.2s",
-          marginBottom: "1rem",
+          backgroundColor: fichier ? theme.colors.primaryLight : theme.colors.bg,
+          marginBottom: 16,
         }}
       >
         <input
@@ -129,24 +127,24 @@ export default function ParcelleImport({ onSuccess, onCancel }) {
 
         {fichier ? (
           <div>
-            <div style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>✅</div>
-            <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#2E5E3E" }}>
+            <CheckCircle2 size={24} color={theme.colors.success} style={{ marginBottom: 6 }} />
+            <p style={{ fontSize: theme.font.size.sm, fontWeight: 600, color: theme.colors.text }}>
               {fichier.name}
             </p>
-            <p style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "0.2rem" }}>
+            <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted, marginTop: 2 }}>
               {(fichier.size / 1024).toFixed(1)} Ko
             </p>
-            <p style={{ fontSize: "0.72rem", color: "#9ca3af", marginTop: "0.4rem" }}>
+            <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted, marginTop: 6 }}>
               Cliquez pour changer de fichier
             </p>
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>📁</div>
-            <p style={{ fontSize: "0.85rem", color: "#6b7280" }}>
+            <FileUp size={24} color={theme.colors.textMuted} style={{ marginBottom: 6 }} />
+            <p style={{ fontSize: theme.font.size.sm, color: theme.colors.textSecondary }}>
               Glissez votre fichier ici
             </p>
-            <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.2rem" }}>
+            <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted, marginTop: 2 }}>
               ou cliquez pour parcourir
             </p>
           </div>
@@ -155,23 +153,23 @@ export default function ParcelleImport({ onSuccess, onCancel }) {
 
       {/* Barre de progression */}
       {isUploading && (
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ marginBottom: 16 }}>
           <div style={{
             display: "flex", justifyContent: "space-between",
-            fontSize: "0.78rem", color: "#6b7280", marginBottom: "0.3rem"
+            fontSize: theme.font.size.xs, color: theme.colors.textSecondary, marginBottom: 4,
           }}>
             <span>Upload en cours...</span>
             <span>{progression}%</span>
           </div>
           <div style={{
-            height: "6px", backgroundColor: "#e5e7eb",
-            borderRadius: "3px", overflow: "hidden"
+            height: 6, backgroundColor: theme.colors.border,
+            borderRadius: 3, overflow: "hidden",
           }}>
             <div style={{
-              height: "100%", backgroundColor: "#2E5E3E",
+              height: "100%", backgroundColor: theme.colors.primary,
               width: `${progression}%`,
               transition: "width 0.3s ease",
-              borderRadius: "3px",
+              borderRadius: 3,
             }} />
           </div>
         </div>
@@ -179,29 +177,31 @@ export default function ParcelleImport({ onSuccess, onCancel }) {
 
       {/* Résultat succès */}
       {resultat && (
-        <div style={{
-          backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
-          borderRadius: "0.5rem", padding: "0.75rem",
-          marginBottom: "1rem", fontSize: "0.82rem"
-        }}>
-          <p style={{ fontWeight: 700, color: "#166534", marginBottom: "0.3rem" }}>
-            ✅ Import terminé
+        <div style={successBoxStyle}>
+          <p style={{
+            display: "flex", alignItems: "center", gap: 6,
+            fontWeight: 700, color: theme.colors.success, marginBottom: 4,
+          }}>
+            <CheckCircle2 size={14} /> Import terminé
           </p>
-          <p style={{ color: "#166534" }}>
+          <p style={{ color: theme.colors.success, fontSize: theme.font.size.sm }}>
             {resultat.created} parcelle(s) importée(s) sur {resultat.total_features}
           </p>
           {resultat.errors?.length > 0 && (
-            <div style={{ marginTop: "0.5rem" }}>
-              <p style={{ color: "#dc2626", fontWeight: 600 }}>
-                ⚠️ {resultat.errors.length} erreur(s) :
+            <div style={{ marginTop: 8 }}>
+              <p style={{
+                display: "flex", alignItems: "center", gap: 4,
+                color: theme.colors.danger, fontWeight: 600, fontSize: theme.font.size.xs,
+              }}>
+                <AlertTriangle size={12} /> {resultat.errors.length} erreur(s) :
               </p>
               {resultat.errors.slice(0, 3).map((e, i) => (
-                <p key={i} style={{ color: "#dc2626", fontSize: "0.75rem" }}>
+                <p key={i} style={{ color: theme.colors.danger, fontSize: theme.font.size.xs }}>
                   • {e}
                 </p>
               ))}
               {resultat.errors.length > 3 && (
-                <p style={{ color: "#dc2626", fontSize: "0.75rem" }}>
+                <p style={{ color: theme.colors.danger, fontSize: theme.font.size.xs }}>
                   ... et {resultat.errors.length - 3} autre(s)
                 </p>
               )}
@@ -212,46 +212,60 @@ export default function ParcelleImport({ onSuccess, onCancel }) {
 
       {/* Erreur */}
       {error && (
-        <div style={{
-          backgroundColor: "#fef2f2", border: "1px solid #fecaca",
-          borderRadius: "0.5rem", padding: "0.6rem 0.75rem",
-          marginBottom: "1rem", fontSize: "0.8rem", color: "#dc2626"
-        }}>
-          ⚠️ {error}
+        <div style={errorBoxStyle}>
+          <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+          {error}
         </div>
       )}
 
       {/* Boutons */}
-      <div style={{ display: "flex", gap: "0.5rem" }}>
-        <button
-          onClick={onCancel}
-          style={{
-            flex: 1, padding: "0.6rem",
-            borderRadius: "0.4rem",
-            backgroundColor: "#f3f4f6",
-            border: "1px solid #e5e7eb",
-            cursor: "pointer", fontSize: "0.85rem",
-            color: "#374151", fontWeight: 600,
-          }}
-        >
+      <div style={{ display: "flex", gap: 8 }}>
+        <Button variant="secondary" onClick={onCancel} style={{ flex: 1 }}>
           Annuler
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="primary"
+          icon={Upload}
           onClick={handleUpload}
           disabled={!fichier || isUploading}
-          style={{
-            flex: 2, padding: "0.6rem",
-            borderRadius: "0.4rem",
-            backgroundColor: !fichier || isUploading ? "#9ca3af" : "#2E5E3E",
-            border: "none",
-            cursor: !fichier || isUploading ? "not-allowed" : "pointer",
-            fontSize: "0.85rem", color: "white", fontWeight: 600,
-          }}
+          style={{ flex: 2 }}
         >
-          {isUploading ? `Import... ${progression}%` : "📤 Importer"}
-        </button>
+          {isUploading ? `Import... ${progression}%` : "Importer"}
+        </Button>
       </div>
 
     </div>
   );
 }
+
+const closeButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "none", border: "none",
+  cursor: "pointer", color: theme.colors.textMuted,
+  width: 28, height: 28,
+};
+
+const infoBoxStyle = {
+  display: "flex", alignItems: "flex-start", gap: 8,
+  border: `1px solid ${theme.colors.border}`,
+  borderRadius: theme.radius.md, padding: "10px 12px",
+  marginBottom: 16, fontSize: theme.font.size.xs, color: theme.colors.textSecondary,
+  lineHeight: 1.6,
+};
+
+const successBoxStyle = {
+  border: `1px solid ${theme.colors.border}`,
+  borderLeft: `3px solid ${theme.colors.success}`,
+  backgroundColor: "#F0FDF4",
+  borderRadius: theme.radius.sm, padding: 12,
+  marginBottom: 16,
+};
+
+const errorBoxStyle = {
+  display: "flex", alignItems: "flex-start", gap: 6,
+  borderLeft: `3px solid ${theme.colors.danger}`,
+  backgroundColor: "#FEF2F2",
+  borderRadius: theme.radius.sm,
+  padding: "8px 10px",
+  marginBottom: 16, fontSize: theme.font.size.xs, color: theme.colors.danger,
+};
