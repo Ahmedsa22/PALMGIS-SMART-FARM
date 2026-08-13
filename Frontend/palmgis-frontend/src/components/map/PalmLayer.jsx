@@ -105,7 +105,7 @@ export default function PalmLayer({ map, filtres = {} }) {
     const ajouterCouches = async () => {
       try {
         const geojson = await getPalmsByParcelle(parcelleId);
-        console.log("✅ Palmiers reçus :", geojson.features?.length);
+        console.log("Palmiers reçus :", geojson.features?.length);
 
         const geojsonCorrige = {
           ...geojson,
@@ -272,7 +272,7 @@ export default function PalmLayer({ map, filtres = {} }) {
         });
 
       } catch (err) {
-        console.error("❌ Erreur chargement palmiers :", err);
+        console.error("Erreur chargement palmiers :", err);
       }
     };
 

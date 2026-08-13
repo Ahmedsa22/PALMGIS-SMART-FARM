@@ -24,7 +24,7 @@ export default function ParcelleLayer({ map }) {
     const ajouterCouches = async () => {
       try {
         const geojson = await getParcelles();
-        console.log("✅ Parcelles reçues:", geojson?.features?.length);
+        console.log("Parcelles reçues:", geojson?.features?.length);
 
         // GeoFeatureModelSerializer exclut le champ "id" des properties
         // (il n'apparaît qu'au niveau racine de chaque Feature). MapLibre ne
@@ -207,7 +207,7 @@ export default function ParcelleLayer({ map }) {
         });
 
       } catch (err) {
-        console.error("❌ Erreur chargement parcelles :", err);
+        console.error("Erreur chargement parcelles :", err);
       }
     };
 
