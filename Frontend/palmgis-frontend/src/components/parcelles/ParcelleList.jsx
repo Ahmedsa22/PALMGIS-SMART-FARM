@@ -1,8 +1,24 @@
 import { useState, useEffect } from "react";
+import { LandPlot, TreePalm, Upload, Search } from "lucide-react";
 import { getParcelles } from "../../api/parcelles";
 import { getPalms } from "../../api/palms";
 import useMapStore from "../../store/mapStore";
 import useAuthStore from "../../store/authStore";
+import { theme } from "../../styles/theme";
+import { SectionTitle } from "../ui/Badge";
+
+const STATUT_LABELS = {
+  active:     "Active",
+  en_repos:   "En repos",
+  abandonnee: "Abandonnée",
+};
+const STATUT_COLORS = {
+  active:     theme.colors.success,
+  en_repos:   theme.colors.warning,
+  abandonnee: theme.colors.textMuted,
+};
+
+const TYPE_LABELS = { ferme: "Ferme", zone: "Zone", parcelle: "Parcelle" };
 
 export default function ParcelleList({
   onShowImport,
@@ -13,7 +29,6 @@ export default function ParcelleList({
   const zoomSurParcelle      = useMapStore((state) => state.zoomSurParcelle);
   const couchesActives       = useMapStore((state) => state.couchesActives);
   const toggleCouche         = useMapStore((state) => state.toggleCouche);
-  const setCouchesActives    = useMapStore((state) => state.setCouchesActives);
 
   const [parcelles, setParcelles]     = useState([]);
   const [nbPalms, setNbPalms]         = useState({});  // { parcelleId: nb }
@@ -28,7 +43,7 @@ export default function ParcelleList({
         const features = data.features || [];
         setParcelles(features);
 
-       
+
 
         // Compte les palmiers par parcelle
         const counts = {};
@@ -58,92 +73,69 @@ export default function ParcelleList({
     f.properties.nom?.toLowerCase().includes(recherche.toLowerCase())
   );
 
-  const statutCouleur = {
-    active:     "#22c55e",
-    en_repos:   "#f97316",
-    abandonnee: "#6b7280",
-  };
-
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
       {/* En-tête */}
       <div style={{
-        padding: "0.75rem 1rem",
-        borderBottom: "1px solid #f3f4f6",
+        padding: 16,
+        borderBottom: `1px solid ${theme.colors.border}`,
         flexShrink: 0,
       }}>
         <div style={{
           display: "flex", justifyContent: "space-between",
-          alignItems: "center", marginBottom: "0.5rem",
+          alignItems: "center", marginBottom: 10,
         }}>
-          <h2 style={{
-            fontWeight: "bold", color: "#374151", fontSize: "0.9rem"
-          }}>
-            📋 Parcelles
-          </h2>
+          <SectionTitle>Parcelles</SectionTitle>
 
           {/* Boutons import */}
           {user?.role === "manager" && (
-            <div style={{ display: "flex", gap: "0.3rem" }}>
-              <button
-                onClick={onShowImport}
-                title="Importer parcelles"
-                style={{
-                  padding: "0.3rem 0.5rem", borderRadius: "0.4rem",
-                  backgroundColor: "#2E5E3E", color: "white",
-                  border: "none", cursor: "pointer", fontSize: "0.75rem",
-                }}
-              >
-                📂
-              </button>
+            <div style={{ display: "flex", gap: 6 }}>
               <button
                 onClick={onShowImportPalms}
                 title="Importer palmiers"
-                style={{
-                  padding: "0.3rem 0.5rem", borderRadius: "0.4rem",
-                  backgroundColor: "#f0fdf4", color: "#2E5E3E",
-                  border: "1px solid #bbf7d0",
-                  cursor: "pointer", fontSize: "0.75rem",
-                }}
+                style={iconButtonStyle}
               >
-                🌴
+                <TreePalm size={14} />
+              </button>
+              <button
+                onClick={onShowImport}
+                title="Importer parcelles"
+                style={{ ...iconButtonStyle, backgroundColor: theme.colors.primary, color: "white", borderColor: theme.colors.primary }}
+              >
+                <Upload size={14} />
               </button>
             </div>
           )}
         </div>
 
         {/* Recherche */}
-        <input
-          type="text"
-          value={recherche}
-          onChange={(e) => setRecherche(e.target.value)}
-          placeholder="Rechercher une parcelle..."
-          style={{
-            width: "100%", padding: "0.4rem 0.6rem",
-            borderRadius: "0.4rem", border: "1px solid #e5e7eb",
-            fontSize: "0.8rem", boxSizing: "border-box",
-          }}
-        />
+        <div style={{ position: "relative" }}>
+          <Search size={14} color={theme.colors.textMuted} style={{
+            position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
+          }} />
+          <input
+            type="text"
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            placeholder="Rechercher une parcelle..."
+            style={{
+              width: "100%", padding: "8px 10px 8px 30px",
+              borderRadius: theme.radius.md, border: `1px solid ${theme.colors.borderStrong}`,
+              fontSize: theme.font.size.sm, boxSizing: "border-box",
+              outline: "none", fontFamily: theme.font.family,
+            }}
+          />
+        </div>
       </div>
 
       {/* Liste */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "0.5rem" }}>
+      <div style={{ flex: 1, overflowY: "auto" }}>
 
         {isLoading ? (
-          <p style={{
-            textAlign: "center", color: "#9ca3af",
-            fontSize: "0.82rem", padding: "1rem"
-          }}>
-            Chargement...
-          </p>
+          <p style={emptyStateStyle}>Chargement...</p>
         ) : parcellesFiltrees.length === 0 ? (
-          <p style={{
-            textAlign: "center", color: "#9ca3af",
-            fontSize: "0.82rem", padding: "1rem"
-          }}>
-            Aucune parcelle trouvée
-          </p>
+          <p style={emptyStateStyle}>Aucune parcelle trouvée</p>
         ) : (
           parcellesFiltrees.map((feature) => {
             const p  = feature.properties;
@@ -155,15 +147,12 @@ export default function ParcelleList({
                 key={id}
                 style={{
                   display: "flex", alignItems: "center",
-                  gap: "0.5rem", padding: "0.6rem 0.5rem",
-                  borderRadius: "0.5rem", marginBottom: "0.3rem",
-                  backgroundColor: "white",
-                  border: "1px solid #f3f4f6",
+                  gap: 10, padding: "8px 16px",
+                  borderBottom: `1px solid ${theme.colors.border}`,
                   cursor: "pointer",
-                  transition: "background 0.15s",
                 }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f9fafb"}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = "white"}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = theme.colors.bg}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
               >
                 {/* Case à cocher */}
                 <input
@@ -174,45 +163,51 @@ export default function ParcelleList({
                   style={{ cursor: "pointer", flexShrink: 0 }}
                 />
 
+                <LandPlot size={14} color={theme.colors.textMuted} style={{ flexShrink: 0 }} />
+
                 {/* Infos parcelle */}
                 <div
                   style={{ flex: 1, minWidth: 0 }}
                   onClick={() => {
                     selectionnerParcelle(feature);
-                    // Zoom sur la parcelle
                     if (feature.bbox) {
                       zoomSurParcelle(feature.bbox);
                     }
                   }}
                 >
-                  <div style={{
-                    display: "flex", justifyContent: "space-between",
-                    alignItems: "center",
-                  }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{
-                      fontWeight: 600, fontSize: "0.85rem",
-                      color: "#1f2937",
+                      fontWeight: 600, fontSize: theme.font.size.sm,
+                      color: theme.colors.text,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                     }}>
                       {p.nom}
                     </span>
-                    <span style={{
-                      fontSize: "0.7rem", fontWeight: 600,
-                      color: statutCouleur[p.statut] || "#6b7280",
-                    }}>
-                      ● {p.statut === "active" ? "Active"
-                        : p.statut === "en_repos" ? "En repos"
-                        : "Abandonnée"}
-                    </span>
+                    {p.type_parcelle && (
+                      <span style={{
+                        fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.4px",
+                        color: theme.colors.textMuted, flexShrink: 0,
+                      }}>
+                        {TYPE_LABELS[p.type_parcelle] || p.type_parcelle}
+                      </span>
+                    )}
                   </div>
                   <div style={{
-                    display: "flex", gap: "0.75rem",
-                    marginTop: "0.2rem",
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    marginTop: 2,
                   }}>
-                    <span style={{ fontSize: "0.72rem", color: "#6b7280" }}>
-                      📐 {p.superficie_ha} ha
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      fontSize: theme.font.size.xs, color: theme.colors.textSecondary,
+                    }}>
+                      <span style={{
+                        width: 6, height: 6, borderRadius: "50%",
+                        backgroundColor: STATUT_COLORS[p.statut] || theme.colors.textMuted,
+                      }} />
+                      {STATUT_LABELS[p.statut] || p.statut}
                     </span>
-                    <span style={{ fontSize: "0.72rem", color: "#6b7280" }}>
-                      🌴 {nbPalms[id] ?? "..."} palmiers
+                    <span style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted }}>
+                      {nbPalms[id] ?? "…"} palmiers
                     </span>
                   </div>
                 </div>
@@ -224,3 +219,18 @@ export default function ParcelleList({
     </div>
   );
 }
+
+const iconButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center",
+  width: 28, height: 28,
+  borderRadius: theme.radius.sm,
+  backgroundColor: theme.colors.surface,
+  color: theme.colors.textSecondary,
+  border: `1px solid ${theme.colors.border}`,
+  cursor: "pointer",
+};
+
+const emptyStateStyle = {
+  textAlign: "center", color: theme.colors.textMuted,
+  fontSize: theme.font.size.sm, padding: 24,
+};
