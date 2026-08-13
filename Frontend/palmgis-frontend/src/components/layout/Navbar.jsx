@@ -69,6 +69,12 @@ export default function Navbar() {
           📊 Dashboard
         </NavLink>
         {/* ⚠️ PAS de NavLink autour de NotificationBadge */}
+        {/* Dans Navbar.jsx, dans les liens de navigation */}
+      {user?.role === "manager" && (
+        <NavLink onClick={() => navigate("/users")}>
+          👥 Utilisateurs
+        </NavLink>
+      )}
       </div>
 
       {/* Droite — utilisateur + notifications + déconnexion */}

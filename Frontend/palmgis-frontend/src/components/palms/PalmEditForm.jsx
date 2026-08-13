@@ -24,16 +24,16 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
     try {
       await updatePalm(p.id, {
         variete,
-        age,
-        sexe,
+        age:        etatSite === "V" ? null : age,
+        sexe:       etatSite === "V" ? null : sexe,
         etat_sante: etatSante,
         etat_site:  etatSite,
         ligne,
         numero,
         code_local: codeLocal,
         description,
-        nombre_rejets: nombreRejets !== "" ? parseInt(nombreRejets) : null,
-
+        nombre_rejets: etatSite === "TOF" && nombreRejets !== ""
+          ? parseInt(nombreRejets) : null,
       });
       onSuccess?.();
     } catch (err) {
@@ -125,24 +125,47 @@ export default function PalmEditForm({ palm, onSuccess, onCancel }) {
           </div>
         </div>
 
-        {/* Sexe + Âge */}
-        <div style={rowStyle}>
-          <div>
-            <label style={labelStyle}>Sexe</label>
-            <select value={sexe} onChange={(e) => setSexe(e.target.value)} style={inputStyle}>
-              <option value="M">Mâle</option>
-              <option value="F">Femelle</option>
-            </select>
+      
+        {/* Sexe + Âge — cachés si site vide */}
+        {etatSite !== "V" ? (
+          <div style={rowStyle}>
+            <div>
+              <label style={labelStyle}>Sexe</label>
+              <select
+                value={sexe}
+                onChange={e => setSexe(e.target.value)}
+                style={inputStyle}
+              >
+                <option value="M">Mâle</option>
+                <option value="F">Femelle</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Âge</label>
+              <select
+                value={age}
+                onChange={e => setAge(e.target.value)}
+                style={inputStyle}
+              >
+                <option value="JP">Jeune</option>
+                <option value="A">Adulte</option>
+                <option value="V">Vieux</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label style={labelStyle}>Âge</label>
-            <select value={age} onChange={(e) => setAge(e.target.value)} style={inputStyle}>
-              <option value="JP">Jeune</option>
-              <option value="A">Adulte</option>
-              <option value="V">Vieux</option>
-            </select>
+        ) : (
+          <div style={{
+            backgroundColor: "#f9fafb",
+            border: "1px solid #e5e7eb",
+            borderRadius: "0.4rem",
+            padding: "0.5rem 0.75rem",
+            fontSize: "0.78rem",
+            color: "#6b7280",
+            marginBottom: "0.75rem",
+          }}>
+            ℹ️ Site vide — sexe et âge non applicables
           </div>
-        </div>
+        )}
 
         {/* Variété */}
         <div style={{ marginBottom: "0.75rem" }}>

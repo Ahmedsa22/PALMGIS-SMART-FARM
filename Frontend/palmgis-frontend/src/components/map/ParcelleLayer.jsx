@@ -1,7 +1,7 @@
 import { useEffect } from "react";
+import maplibregl from "maplibre-gl";
 import { getParcelles } from "../../api/parcelles";
 import useMapStore from "../../store/mapStore";
-import maplibregl from "maplibre-gl"; 
 
 const COULEURS_STATUT = {
   active:     "#22c55e",
@@ -10,129 +10,194 @@ const COULEURS_STATUT = {
 };
 
 export default function ParcelleLayer({ map }) {
-  const selectionnerParcelle = useMapStore(
-    (state) => state.selectionnerParcelle
-  );
+  const selectionnerParcelle = useMapStore((state) => state.selectionnerParcelle);
+  const parcelleSelectionnee = useMapStore((state) => state.parcelleSelectionnee);
+  const couchesActives       = useMapStore((state) => state.couchesActives);
 
+  // ── Charge et affiche les parcelles ──
   useEffect(() => {
     if (!map) return;
 
-    let sourceAjoutee = false;
+    let popup = null;
 
     const ajouterCouches = async () => {
       try {
         const geojson = await getParcelles();
-        
+        console.log("✅ Parcelles reçues:", geojson?.features?.length);
 
-        // Déplace l'id dans properties pour que MapLibre puisse le lire
+        // GeoFeatureModelSerializer exclut le champ "id" des properties
+        // (il n'apparaît qu'au niveau racine de chaque Feature). MapLibre ne
+        // lit que les properties via ["get","id"] → on le recopie ici.
         const geojsonCorrige = {
           ...geojson,
           features: geojson.features.map(f => ({
             ...f,
-            properties: {
-              ...f.properties,
-              id: f.id,
-            }
-          }))
+            properties: { ...f.properties, id: f.properties.id ?? f.id },
+          })),
         };
 
-        // Avant d'ajouter la source, vérifie qu'elle n'existe pas déjà
-        
-
-        if (!map.getSource("parcelles-source")) {
-        map.addSource("parcelles-source", {
-            type: "geojson",
-            data: geojsonCorrige,
+        // Nettoie les couches existantes
+        ["parcelles-selected", "parcelles-border", "parcelles-fill"].forEach(id => {
+          if (map.getLayer(id)) map.removeLayer(id);
         });
-        sourceAjoutee = true;
+        if (map.getSource("parcelles-source")) {
+          map.removeSource("parcelles-source");
         }
 
-        if (!map.getLayer("parcelles-fill")) {
+        // Source
+        map.addSource("parcelles-source", {
+          type: "geojson",
+          data: geojsonCorrige,
+        });
 
+        // ── Couche remplissage ──
         map.addLayer({
-          id: "parcelles-fill",
-          type: "fill",
+          id:     "parcelles-fill",
+          type:   "fill",
           source: "parcelles-source",
           paint: {
             "fill-color": [
-              "match", ["get", "statut"],
-              "active",     COULEURS_STATUT.active,
-              "en_repos",   COULEURS_STATUT.en_repos,
-              "abandonnee", COULEURS_STATUT.abandonnee,
+              "case",
+              ["==", ["get", "type_parcelle"], "ferme"],   "#dc2626",
+              ["==", ["get", "type_parcelle"], "zone"],    "#3b82f6",
+              ["==", ["get", "statut"], "active"],         "#22c55e",
+              ["==", ["get", "statut"], "en_repos"],       "#f97316",
+              ["==", ["get", "statut"], "abandonnee"],     "#6b7280",
               "#6b7280",
             ],
-            "fill-opacity": 0.35,
+            "fill-opacity": [
+              "case",
+              ["==", ["get", "type_parcelle"], "ferme"],   0.05,
+              ["==", ["get", "type_parcelle"], "zone"],    0.1,
+              0.4,
+            ],
           },
         });
-        }
 
-
-        if (!map.getLayer("parcelles-border")) {
-
+        // ── Couche bordure ──
         map.addLayer({
-          id: "parcelles-border",
-          type: "line",
+          id:     "parcelles-border",
+          type:   "line",
           source: "parcelles-source",
           paint: {
             "line-color": [
-              "match", ["get", "statut"],
-              "active",     COULEURS_STATUT.active,
-              "en_repos",   COULEURS_STATUT.en_repos,
-              "abandonnee", COULEURS_STATUT.abandonnee,
+              "case",
+              ["==", ["get", "type_parcelle"], "ferme"],   "#dc2626",
+              ["==", ["get", "type_parcelle"], "zone"],    "#3b82f6",
+              ["==", ["get", "statut"], "active"],         "#22c55e",
+              ["==", ["get", "statut"], "en_repos"],       "#f97316",
+              ["==", ["get", "statut"], "abandonnee"],     "#6b7280",
               "#6b7280",
             ],
-            "line-width": 2,
+            "line-width": [
+              "case",
+              ["==", ["get", "type_parcelle"], "ferme"],   3,
+              ["==", ["get", "type_parcelle"], "zone"],    2,
+              2,
+            ],
           },
         });
-        }
 
-
-
-        if (!map.getLayer("parcelles-selected")) {
-
+        // ── Couche surbrillance sélection ──
         map.addLayer({
-          id: "parcelles-selected",
-          type: "fill",
+          id:     "parcelles-selected",
+          type:   "line",
           source: "parcelles-source",
           paint: {
-            "fill-color": "#B08D57",
-            "fill-opacity": 0.5,
+            "line-color":   "#B08D57",
+            "line-width":   4,
+            "line-opacity": 1,
           },
           filter: ["==", ["get", "id"], -1],
         });
-        }
 
-        
+        // ── Popup au survol ──
+        map.on("mouseenter", "parcelles-fill", (e) => {
+          if (!e.features.length) return;
+          map.getCanvas().style.cursor = "pointer";
 
+          const props = e.features[0].properties;
+          const coords = e.lngLat;
 
-        // Clic sur une parcelle
+          const typeLabel = {
+            ferme:    "🏡 Ferme",
+            zone:     "📍 Zone",
+            parcelle: "🌿 Parcelle",
+          }[props.type_parcelle] || "🌿 Parcelle";
+
+          const statutLabel = {
+            active:     "✅ Active",
+            en_repos:   "⏸️ En repos",
+            abandonnee: "❌ Abandonnée",
+          }[props.statut] || props.statut;
+
+          const html = `
+            <div style="font-family:system-ui,sans-serif;min-width:180px;padding:4px;">
+              <div style="background:#2E5E3E;color:white;padding:8px 12px;
+                margin:-12px -12px 10px -12px;border-radius:6px 6px 0 0;
+                font-weight:bold;font-size:14px;">
+                ${typeLabel} — ${props.nom}
+              </div>
+              <table style="width:100%;font-size:13px;border-collapse:collapse;">
+                <tr>
+                  <td style="color:#6b7280;padding:3px 0;">Statut</td>
+                  <td style="font-weight:600;padding:3px 0 3px 8px;">${statutLabel}</td>
+                </tr>
+                <tr>
+                  <td style="color:#6b7280;padding:3px 0;">Superficie</td>
+                  <td style="font-weight:600;padding:3px 0 3px 8px;">
+                    ${props.superficie_ha ?? "—"} ha
+                  </td>
+                </tr>
+                ${props.proprietaire ? `
+                <tr>
+                  <td style="color:#6b7280;padding:3px 0;">Propriétaire</td>
+                  <td style="font-weight:600;padding:3px 0 3px 8px;">${props.proprietaire}</td>
+                </tr>` : ""}
+              </table>
+            </div>
+          `;
+
+          if (popup) popup.remove();
+          popup = new maplibregl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            maxWidth: "260px",
+            offset: 10,
+          })
+            .setLngLat(coords)
+            .setHTML(html)
+            .addTo(map);
+        });
+
+        map.on("mouseleave", "parcelles-fill", () => {
+          map.getCanvas().style.cursor = "";
+          if (popup) { popup.remove(); popup = null; }
+        });
+
+        // ── Clic → sélectionne la parcelle ──
         map.on("click", "parcelles-fill", (e) => {
           if (!e.features.length) return;
           const feature = e.features[0];
+
           selectionnerParcelle(feature);
-          map.setFilter("parcelles-selected", [
-            "==", ["get", "id"], feature.properties.id
-          ]);
-        });
 
-        // Curseur pointer au survol
-        map.on("mouseenter", "parcelles-fill", () => {
-          map.getCanvas().style.cursor = "pointer";
-        });
-        map.on("mouseleave", "parcelles-fill", () => {
-          map.getCanvas().style.cursor = "";
-        });
-
-        // Clic en dehors → désélectionner
-        map.on("click", (e) => {
-          const features = map.queryRenderedFeatures(e.point, {
-            layers: ["parcelles-fill"],
-          });
-          if (!features.length) {
-            map.setFilter("parcelles-selected", [
-              "==", ["get", "id"], -1
-            ]);
+          // Surbrillance
+          const id = feature.properties?.id ?? feature.id ?? null;
+          if (id !== null) {
+            map.setFilter("parcelles-selected", ["==", ["get", "id"], id]);
           }
+
+          // Zoom
+          const coords = feature.geometry.coordinates[0];
+          const lons = coords.map(c => c[0]);
+          const lats = coords.map(c => c[1]);
+          map.fitBounds([
+            [Math.min(...lons), Math.min(...lats)],
+            [Math.max(...lons), Math.max(...lats)],
+          ], { padding: 80, duration: 800 });
+
+          e.originalEvent.stopPropagation();
         });
 
       } catch (err) {
@@ -147,37 +212,45 @@ export default function ParcelleLayer({ map }) {
     }
 
     return () => {
-      if (map && sourceAjoutee) {
-        ["parcelles-selected", "parcelles-border", "parcelles-fill"]
-          .forEach(id => {
-            if (map.getLayer(id)) map.removeLayer(id);
-          });
-        if (map.getSource("parcelles-source")) {
-          map.removeSource("parcelles-source");
-        }
+      ["parcelles-selected", "parcelles-border", "parcelles-fill"].forEach(id => {
+        if (map.getLayer(id)) map.removeLayer(id);
+      });
+      if (map.getSource("parcelles-source")) {
+        map.removeSource("parcelles-source");
       }
+      if (popup) popup.remove();
     };
   }, [map]);
 
-
-  const couchesActives = useMapStore((state) => state.couchesActives);
-
+  // ── Visibilité selon couchesActives ──
   useEffect(() => {
     if (!map || !map.getLayer("parcelles-fill")) return;
 
-    // Pour chaque feature, filtre selon couchesActives
     if (couchesActives.length === 0) {
-      // Aucune couche active → cache tout
-      map.setFilter("parcelles-fill",     ["==", ["get", "id"], ""]);
-      map.setFilter("parcelles-border",   ["==", ["get", "id"], ""]);
-      map.setFilter("parcelles-selected", ["==", ["get", "id"], -1]);
+      map.setFilter("parcelles-fill",   ["==", ["get", "id"], -999]);
+      map.setFilter("parcelles-border", ["==", ["get", "id"], -999]);
     } else {
-      // Affiche uniquement les parcelles dont l'id est dans couchesActives
-      const filtre = ["in", ["get", "id"], ["literal", couchesActives]];
-      map.setFilter("parcelles-fill",   filtre);
-      map.setFilter("parcelles-border", filtre);
+      map.setFilter("parcelles-fill",   ["in", ["get", "id"], ["literal", couchesActives]]);
+      map.setFilter("parcelles-border", ["in", ["get", "id"], ["literal", couchesActives]]);
     }
-}, [map, couchesActives]);
+  }, [map, couchesActives]);
+
+  // ── Surbrillance selon parcelleSelectionnee ──
+  useEffect(() => {
+    if (!map || !map.getLayer("parcelles-selected")) return;
+
+    if (parcelleSelectionnee) {
+      const id = parcelleSelectionnee.properties?.id
+              ?? parcelleSelectionnee.id
+              ?? null;
+      map.setFilter(
+        "parcelles-selected",
+        ["==", ["get", "id"], id !== null && id !== undefined ? id : -1]
+      );
+    } else {
+      map.setFilter("parcelles-selected", ["==", ["get", "id"], -1]);
+    }
+  }, [map, parcelleSelectionnee]);
 
   return null;
 }

@@ -6,12 +6,21 @@ export default function MapLegend({ visible }) {
     { label: "Moyen",      couleur: "#f97316", code: "MO" },
     { label: "Mauvais",    couleur: "#ef4444", code: "MA" },
     { label: "Mort",       couleur: "#1f2937", code: "MR" },
+    { label: "Vide",       couleur: "#6b7280", code: "AB" },
   ];
 
   const statuts = [
     { label: "Active",     couleur: "#22c55e" },
     { label: "En repos",   couleur: "#f97316" },
     { label: "Abandonnée", couleur: "#6b7280" },
+  ];
+
+  const types = [
+    { label: "Ferme",    couleur: "#dc2626", style: "dashed" },
+    { label: "Zone",     couleur: "#3b82f6", style: "dashed" },
+    { label: "Active",   couleur: "#22c55e", style: "solid"  },
+    { label: "En repos", couleur: "#f97316", style: "solid"  },
+    { label: "Abandonnee", couleur: "#6b7280", style: "solid" },
   ];
 
   return (
@@ -76,19 +85,20 @@ export default function MapLegend({ visible }) {
         📐 Parcelles
       </p>
 
-      {/* Statuts parcelles */}
+
+      {/* Types parcelles */}
       <div style={{
-        display: "flex", flexDirection: "column", gap: "0.35rem"
+        display: "flex", flexDirection: "column", gap: "0.35rem",
+        marginTop: "0.75rem",
       }}>
-        {statuts.map(({ label, couleur }) => (
+        {types.map(({ label, couleur, style }) => (
           <div key={label} style={{
             display: "flex", alignItems: "center", gap: "0.5rem"
           }}>
             <div style={{
               width: "14px", height: "8px",
               backgroundColor: couleur,
-              opacity: 0.5,
-              border: `2px solid ${couleur}`,
+              border: `2px ${style} ${couleur}`,
               borderRadius: "2px",
               flexShrink: 0,
             }} />
@@ -98,6 +108,7 @@ export default function MapLegend({ visible }) {
           </div>
         ))}
       </div>
+
 
     </div>
   );

@@ -4,7 +4,12 @@ import { genererCarte } from "../../api/parcelles";
 export default function CarteForm({ parcelle, onCancel }) {
   const p = parcelle.properties;
 
-  const [orientation, setOrientation] = useState("portrait");
+  // ← Récupère l'id à tous les niveaux possibles
+  const parcelleId = parcelle?.properties?.id
+                  ?? parcelle?.id
+                  ?? p?.id;
+
+  const [orientation, setOrientation] = useState("landscape");
   const [titre, setTitre]             = useState(`Carte de la palmeraie ${p.nom}`);
   const [typeCarte, setTypeCarte]     = useState("etat_sanitaire");
   const [isLoading, setIsLoading]     = useState(false);
@@ -15,9 +20,11 @@ export default function CarteForm({ parcelle, onCancel }) {
     setIsLoading(true);
     setError(null);
 
+    console.log("📤 parcelle_id envoyé:", parcelleId);
+
     try {
       await genererCarte({
-        parcelle_id: p.id,
+        parcelle_id: parcelleId,  // ← parcelleId pas p.id
         type_carte:  typeCarte,
         orientation,
         titre,
@@ -39,8 +46,7 @@ export default function CarteForm({ parcelle, onCancel }) {
 
   const labelStyle = {
     display: "block", fontSize: "0.75rem",
-    fontWeight: 600, color: "#374151",
-    marginBottom: "0.2rem",
+    fontWeight: 600, color: "#374151", marginBottom: "0.2rem",
   };
 
   return (
@@ -58,9 +64,7 @@ export default function CarteForm({ parcelle, onCancel }) {
           }}>
             Générer
           </p>
-          <h2 style={{
-            fontSize: "1rem", fontWeight: "bold", color: "#2E5E3E",
-          }}>
+          <h2 style={{ fontSize: "1rem", fontWeight: "bold", color: "#2E5E3E" }}>
             🗺️ Carte PDF
           </h2>
         </div>
@@ -82,6 +86,11 @@ export default function CarteForm({ parcelle, onCancel }) {
         marginBottom: "1rem", fontSize: "0.78rem", color: "#166534",
       }}>
         📐 Parcelle : <strong>{p.nom}</strong> — {p.superficie_ha} ha
+        {!parcelleId && (
+          <span style={{ color: "#dc2626", marginLeft: "0.5rem" }}>
+            ⚠️ ID introuvable
+          </span>
+        )}
       </div>
 
       <form onSubmit={handleGenerer}>
@@ -155,21 +164,21 @@ export default function CarteForm({ parcelle, onCancel }) {
             style={{
               flex: 1, padding: "0.6rem", borderRadius: "0.4rem",
               backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb",
-              cursor: "pointer", fontSize: "0.82rem", color: "#374151",
-              fontWeight: 600,
+              cursor: "pointer", fontSize: "0.82rem",
+              color: "#374151", fontWeight: 600,
             }}
           >
             Annuler
           </button>
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !parcelleId}
             style={{
               flex: 2, padding: "0.6rem", borderRadius: "0.4rem",
-              backgroundColor: isLoading ? "#9ca3af" : "#2E5E3E",
-              border: "none",
-              cursor: isLoading ? "not-allowed" : "pointer",
-              fontSize: "0.82rem", color: "white", fontWeight: 600,
+              backgroundColor: isLoading || !parcelleId ? "#9ca3af" : "#2E5E3E",
+              border: "none", color: "white",
+              cursor: isLoading || !parcelleId ? "not-allowed" : "pointer",
+              fontSize: "0.82rem", fontWeight: 600,
             }}
           >
             {isLoading ? "Génération..." : "🗺️ Télécharger PDF"}

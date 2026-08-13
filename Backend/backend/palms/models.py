@@ -36,8 +36,8 @@ class Palm(BaseModel):
 
     age            = models.CharField(max_length=2,  choices=Age.choices)
     etat_site      = models.CharField(max_length=3,  choices=EtatSite.choices)
-    etat_sante     = models.CharField(max_length=2,  choices=EtatSante.choices)
-    sexe           = models.CharField(max_length=1,  choices=Sexe.choices)
+    etat_sante     = models.CharField(max_length=2,  choices=EtatSante.choices, null=True, blank=True )
+    sexe           = models.CharField(max_length=1,  choices=Sexe.choices, null=True, blank=True)
     variete        = models.CharField(max_length=100, blank=True, null=True)
     ligne          = models.CharField(max_length=100, blank=True, null=True)
     numero         = models.CharField(max_length=100, blank=True, null=True)

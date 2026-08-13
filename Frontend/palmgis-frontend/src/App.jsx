@@ -10,6 +10,7 @@ import MapPage from "./pages/MapPage";
 import InterventionsPage from "./pages/InterventionsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import DashboardPage from "./pages/DashboardPage";
+import UsersPage from "./pages/UsersPage";
 
 
 // Instance React Query — gère le cache de tous les appels API
@@ -66,6 +67,7 @@ export default function App() {
             <Route path="/interventions" element={<InterventionsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/users"         element={<UsersPage />} />
           </Route>
 
           {/* Redirection par défaut */}

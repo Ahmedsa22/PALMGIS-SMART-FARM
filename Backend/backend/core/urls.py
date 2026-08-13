@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import health_check, me, UserViewSet
+from .views import UtilisateursView, health_check, me, UserViewSet, PromouvoirUtilisateurView
 from rest_framework.routers import DefaultRouter
 
 
@@ -13,5 +13,7 @@ router.register("users", UserViewSet, basename="user")
 urlpatterns = [
     path("health/", health_check, name="health-check"),
     path("users/me/", me, name="me"),
+    path("users/",                   UtilisateursView.as_view(),   name="users-list"),
+    path("users/<int:user_id>/role/", PromouvoirUtilisateurView.as_view(), name="user-role"),
 
 ]

@@ -10,6 +10,8 @@ export default function ParcelleEditForm({ parcelle, onSuccess, onCancel }) {
   const [description, setDescription]  = useState(p.description || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError]           = useState(null);
+  const [typeParcelle, setTypeParcelle] = useState(p.type_parcelle || "parcelle");
+
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -20,6 +22,7 @@ export default function ParcelleEditForm({ parcelle, onSuccess, onCancel }) {
       await updateParcelle(p.id, {
         nom,
         statut,
+        type_parcelle: typeParcelle,  
         proprietaire,
         description,
       });
@@ -104,6 +107,19 @@ export default function ParcelleEditForm({ parcelle, onSuccess, onCancel }) {
             <option value="active">✅ Active</option>
             <option value="en_repos">⏸️ En repos</option>
             <option value="abandonnee">❌ Abandonnée</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "0.75rem" }}>
+          <label style={labelStyle}>Type</label>
+          <select
+            value={typeParcelle}
+            onChange={e => setTypeParcelle(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="parcelle">🌿 Parcelle</option>
+            <option value="zone">📍 Zone</option>
+            <option value="ferme">🏡 Ferme</option>
           </select>
         </div>
 

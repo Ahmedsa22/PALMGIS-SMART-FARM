@@ -13,6 +13,12 @@ class Parcelle(BaseModel):
         EN_REPOS = "en_repos", "En repos"
         ABANDONNEE = "abandonnee", "Abandonnée"
 
+    class TypeParcelle(models.TextChoices):
+        FERME    = "ferme",    "Ferme"
+        ZONE     = "zone",     "Zone"
+        PARCELLE = "parcelle", "Parcelle"
+
+
     nom = models.CharField(max_length=150)
     geom = gis_models.PolygonField(srid=4326)  # 4326 = coordonnées GPS (lat/lon)
     statut = models.CharField(
@@ -20,6 +26,14 @@ class Parcelle(BaseModel):
         choices=Statut.choices,
         default=Statut.ACTIVE,
     )
+    type_parcelle = models.CharField(          # ← nouveau champ
+        max_length=10,
+        choices=TypeParcelle.choices,
+        default=TypeParcelle.PARCELLE,
+    )
+
+
+
     proprietaire = models.CharField(max_length=150, blank=True, default="")
     description = models.TextField(blank=True, default="")
 

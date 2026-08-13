@@ -70,7 +70,7 @@ def generer_notifications(parcelle=None):
 
             palmiers_critiques = Palm.objects.filter(
                 parcelle=p,
-                etat_sante__in=[Palm.Etat_Sante.MAUVAIS, Palm.Etat_Sante.MORT],
+                etat_sante__in=[Palm.EtatSante.MAUVAIS, Palm.EtatSante.MORT],
             ).exists()
             priorite = (
                 Notification.Priorite.HAUTE

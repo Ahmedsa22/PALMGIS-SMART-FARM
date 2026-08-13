@@ -26,7 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Authentification (login/logout/refresh via cookies)
     path('api/auth/', include('dj_rest_auth.urls')),
-    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),  # si inscription activée
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),  
 
     path('api-auth/', include('rest_framework.urls')),  # login/logout pour Browsable API
 
@@ -37,7 +37,7 @@ urlpatterns = [
     path('api/', include('parcels.urls')),
     path('api/', include('palms.urls')),
     path('api/', include('notifications.urls')),
-    # path('api/', include('remote_sensing.urls')),
+    path("api/remote-sensing/", include("remote_sensing.urls")),   
     # path('api/', include('ai_predictions.urls')),
     path("api/reports/", include("reports_app.urls")),
 

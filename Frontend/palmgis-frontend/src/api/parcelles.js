@@ -24,7 +24,24 @@ export async function getParcelles(params = {}) {
  * @param {Object} data - { nom, geom (GeoJSON), statut, proprietaire, description }
  */
 export async function createParcelle(data) {
-  const response = await api.post("/parcelles/", data);
+  // Si data contient déjà type/geometry/properties → envoie tel quel
+  if (data.type === "Feature") {
+    const response = await api.post("/parcelles/", data);
+    return response.data;
+  }
+
+  // Sinon → construit le Feature
+  const response = await api.post("/parcelles/", {
+    type:     "Feature",
+    geometry: data.geom,
+    properties: {
+      nom:           data.nom,
+      statut:        data.statut,
+      type_parcelle: data.type_parcelle,
+      proprietaire:  data.proprietaire || "",
+      description:   data.description  || "",
+    },
+  });
   return response.data;
 }
 

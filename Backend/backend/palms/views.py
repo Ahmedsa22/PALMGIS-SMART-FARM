@@ -139,14 +139,22 @@ class PalmImportView(APIView):
                 etat_site  = feature.get("etat_site")   if "etat_site"  in field_names else "ISO"
                 date_val   = str(feature.get("date"))   if "date"       in field_names else ""
 
-                sexe = "F" if sexe_raw and str(sexe_raw).lower() in (
-                    "female", "f", "femelle"
-                ) else "M"
-
-                if etat_sante not in ("B", "MO", "MA", "MR"):
-                    etat_sante = "B"
+                                # ── Validation état site ──
                 if etat_site not in ("ISO", "TOF", "V"):
                     etat_site = "ISO"
+
+                # ── Sexe et âge — null si site vide ──
+                if etat_site == "V":
+                    sexe = None
+                    age  = None
+                else:
+                    # Conversion sexe
+                    sexe = "F" if sexe_raw and str(sexe_raw).lower() in (
+                        "female", "f", "femelle"
+                    ) else "M"
+                    # Âge par défaut
+                    if age not in ("JP", "A", "V"):
+                        age = "A"
 
                 # Rattachement par nom puis spatial
                 parcelle = None

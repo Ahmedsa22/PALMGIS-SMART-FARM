@@ -12,6 +12,9 @@ import PalmEditForm from "../components/palms/PalmEditForm";
 import PalmImport from "../components/palms/PalmImport";
 import ParcelleList from "../components/parcelles/ParcelleList";
 import CarteForm from "../components/reports/CarteForm";
+import RemoteSensingPanel from "../components/remotesensing/RemoteSensingPanel";
+import { deleteParcelle } from "../api/parcelles";
+import { deletePalm }     from "../api/palms";
 
 
 
@@ -106,6 +109,8 @@ function SidebarContent() {
   const [showEditPalm, setShowEditPalm]         = useState(false); 
   const [showImportPalms, setShowImportPalms] = useState(false);
   const [showCarteForm, setShowCarteForm] = useState(false);
+  const [showRemoteSensing, setShowRemoteSensing] = useState(false);
+
 
 
   // Reset formulaire quand on change de sélection
@@ -117,6 +122,7 @@ function SidebarContent() {
     setShowEditPalm(false); 
     setShowImportPalms(false);
     setShowCarteForm(false);
+    setShowRemoteSensing(false);
 
 
   }, [parcelleSelectionnee, palmSelectionne]);
@@ -214,6 +220,17 @@ function SidebarContent() {
       />
     );
   }
+
+  // ─── Vue 4 — Remote Sensing ───
+
+  if (showRemoteSensing) {
+  return (
+    <RemoteSensingPanel
+      parcelle={parcelleSelectionnee}
+      onCancel={() => setShowRemoteSensing(false)}
+    />
+  );
+}
   // ─── Vue 3 — Palmier sélectionné ───
   if (palmSelectionne) {
     const p = palmSelectionne.properties;
@@ -329,6 +346,28 @@ function SidebarContent() {
               fontSize: "0.85rem", fontWeight: 600,
             }} onClick={() => setShowHistorique(true)} >
               📋 Historique interventions
+            </button>
+            {/* ← Ajoute ce bouton */}
+            <button
+              onClick={async () => {
+                const code = palmSelectionne.properties?.code_uni || "ce palmier";
+                if (!window.confirm(`Supprimer le palmier "${code}" ?`)) return;
+                try {
+                  await deletePalm(palmSelectionne.properties?.id || palmSelectionne.id);
+                  useMapStore.getState().selectionnerParcelle(parcelleSelectionnee);
+                  window.location.reload();
+                } catch (err) {
+                  alert("Erreur lors de la suppression.");
+                }
+              }}
+              style={{
+                padding: "0.6rem", borderRadius: "0.5rem",
+                backgroundColor: "#fef2f2", color: "#dc2626",
+                border: "1px solid #fecaca", cursor: "pointer",
+                fontSize: "0.85rem", fontWeight: 600,
+              }}
+            >
+              🗑️ Supprimer le palmier
             </button>
           </div>
         )}
@@ -446,6 +485,43 @@ function SidebarContent() {
               }}
             >
               🗺️ Générer carte PDF
+            </button>
+            <button
+              onClick={() => setShowRemoteSensing(true)}
+              style={{
+                padding: "0.6rem", borderRadius: "0.5rem",
+                backgroundColor: "#eff6ff", color: "#1e40af",
+                border: "1px solid #bfdbfe", cursor: "pointer",
+                fontSize: "0.85rem", fontWeight: 600,
+              }}
+            >
+              🛰️ Indices spectraux
+            </button>
+            {/* ← Ajoute ce bouton */}
+            <button
+              onClick={async () => {
+                 const parcelleId = p.id || parcelleSelectionnee?.id;
+                  console.log("🗑️ Suppression parcelle id:", parcelleId);
+                  console.log("🗑️ p.id:", p.id);
+                  console.log("🗑️ parcelleSelectionnee:", parcelleSelectionnee);
+                if (!window.confirm(`Supprimer la parcelle "${p.nom}" et tous ses palmiers ?`)) return;
+                try {
+                  await deleteParcelle(parcelleId);
+                  useMapStore.getState().reinitialiserSelection();
+                  window.location.reload();
+                } catch (err) {
+                  alert("Erreur lors de la suppression.");
+                  console.log(err)
+                }
+              }}
+              style={{
+                padding: "0.6rem", borderRadius: "0.5rem",
+                backgroundColor: "#fef2f2", color: "#dc2626",
+                border: "1px solid #fecaca", cursor: "pointer",
+                fontSize: "0.85rem", fontWeight: 600,
+              }}
+            >
+              🗑️ Supprimer la parcelle
             </button>
           </div>
         )}

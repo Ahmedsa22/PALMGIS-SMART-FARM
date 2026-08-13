@@ -9,7 +9,7 @@ class ParcelleSerializer(GeoFeatureModelSerializer):
         model = Parcelle
         geo_field = "geom"
         fields = [
-            "id", "nom", "statut", "proprietaire", "description",
+            "id", "nom", "statut", "proprietaire", "description", "type_parcelle",
             "superficie_m2", "superficie_ha", "perimetre_m",
             "created_at", "updated_at",
         ]

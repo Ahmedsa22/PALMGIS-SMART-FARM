@@ -58,8 +58,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_filters",
     "dj_rest_auth",
-    "dj_rest_auth.registration",  # si tu veux l'inscription en self-service
-    "allauth",                    # requis par dj_rest_auth.registration
+    "dj_rest_auth.registration", 
+    "allauth",                    
     "allauth.account",
     "allauth.socialaccount",
 
@@ -79,11 +79,23 @@ SITE_ID = 1  # requis par django.contrib.sites
 
 AUTH_USER_MODEL = "core.User"
 
+
+ACCOUNT_EMAIL_VERIFICATION = "none"    # ← pas de vérification email
+ACCOUNT_AUTHENTICATION_METHOD = "username"
+ACCOUNT_EMAIL_REQUIRED = False
+
 # Configuration GeoServer
 GEOSERVER_URL = "http://localhost:8080/geoserver"
 GEOSERVER_USER = "admin"
 GEOSERVER_PASSWORD = "geoserver"
 GEOSERVER_WORKSPACE = "palmgis"
+
+
+COPERNICUS_USER     = os.getenv("COPERNICUS_USER", "")
+COPERNICUS_PASSWORD = os.getenv("COPERNICUS_PASSWORD", "")
+
+
+SENTINEL_DATA_DIR = "C:/sentinel_data"
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -192,6 +204,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,   # un nouveau refresh token est émis à chaque refresh
 }
+
 
 
 
