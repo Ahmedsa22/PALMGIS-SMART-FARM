@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Search, X } from "lucide-react";
+import { theme } from "../../styles/theme";
 
 export default function MapFilters({ onFiltresChange }) {
   const [ouvert, setOuvert]         = useState(false);
@@ -9,10 +11,10 @@ export default function MapFilters({ onFiltresChange }) {
   const [variete, setVariete]       = useState("");
 
   const ETATS_SANTE = [
-    { code: "B",  label: "Bon",     couleur: "#22c55e" },
-    { code: "MO", label: "Moyen",   couleur: "#f97316" },
-    { code: "MA", label: "Mauvais", couleur: "#ef4444" },
-    { code: "MR", label: "Mort",    couleur: "#1f2937" },
+    { code: "B",  label: "Bon",     couleur: theme.colors.santeBon },
+    { code: "MO", label: "Moyen",   couleur: theme.colors.santeMoyen },
+    { code: "MA", label: "Mauvais", couleur: theme.colors.santeMauvais },
+    { code: "MR", label: "Mort",    couleur: theme.colors.santeMort },
   ];
 
   const ETATS_SITE = [
@@ -39,7 +41,7 @@ export default function MapFilters({ onFiltresChange }) {
 
     setListe(nouvelle);
 
-    // ✅ Construit les filtres avec la nouvelle valeur directement
+    // Construit les filtres avec la nouvelle valeur directement
     const nouveauxFiltres = {
       etatSante: nomChamp === "etatSante" ? nouvelle : etatSante,
       etatSite:  nomChamp === "etatSite"  ? nouvelle : etatSite,
@@ -49,10 +51,6 @@ export default function MapFilters({ onFiltresChange }) {
     };
 
     onFiltresChange?.(nouveauxFiltres);
-  }
-
-  function appliquer(filtres) {
-    onFiltresChange?.(filtres);
   }
 
   function reset() {
@@ -73,30 +71,32 @@ export default function MapFilters({ onFiltresChange }) {
   return (
     <div style={{
       position: "absolute",
-      top: "0.75rem",
-      left: "0.75rem",
+      top: 12,
+      left: 12,
       zIndex: 10,
+      fontFamily: theme.font.family,
     }}>
 
       {/* Bouton toggle */}
       <button
         onClick={() => setOuvert(!ouvert)}
         style={{
-          display: "flex", alignItems: "center", gap: "0.4rem",
-          backgroundColor: "white",
-          border: `2px solid ${nbFiltresActifs > 0 ? "#2E5E3E" : "#e5e7eb"}`,
-          borderRadius: "0.6rem", padding: "0.5rem 0.75rem",
-          cursor: "pointer", fontSize: "0.82rem", fontWeight: 600,
-          color: nbFiltresActifs > 0 ? "#2E5E3E" : "#374151",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          display: "flex", alignItems: "center", gap: 6,
+          backgroundColor: theme.colors.surface,
+          border: `1px solid ${nbFiltresActifs > 0 ? theme.colors.primary : theme.colors.border}`,
+          borderRadius: theme.radius.md, padding: "8px 12px",
+          cursor: "pointer", fontSize: theme.font.size.sm, fontWeight: 600,
+          color: nbFiltresActifs > 0 ? theme.colors.primary : theme.colors.textSecondary,
+          boxShadow: theme.shadow.sm,
         }}
       >
-        🔍 Filtres
+        <Search size={14} />
+        Filtres
         {nbFiltresActifs > 0 && (
           <span style={{
-            backgroundColor: "#2E5E3E", color: "white",
-            borderRadius: "50%", fontSize: "0.65rem",
-            minWidth: "18px", height: "18px",
+            backgroundColor: theme.colors.primary, color: "white",
+            borderRadius: "50%", fontSize: "10px",
+            minWidth: 18, height: 18,
             display: "flex", alignItems: "center",
             justifyContent: "center", fontWeight: 700,
           }}>
@@ -108,24 +108,24 @@ export default function MapFilters({ onFiltresChange }) {
       {/* Panneau de filtres */}
       {ouvert && (
         <div style={{
-          marginTop: "0.5rem",
-          backgroundColor: "white",
-          borderRadius: "0.75rem",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-          border: "1px solid #e5e7eb",
-          padding: "1rem",
-          minWidth: "240px",
+          marginTop: 8,
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.radius.lg,
+          boxShadow: theme.shadow.md,
+          border: `1px solid ${theme.colors.border}`,
+          padding: 16,
+          minWidth: 240,
         }}>
 
           {/* En-tête */}
           <div style={{
             display: "flex", justifyContent: "space-between",
-            alignItems: "center", marginBottom: "0.75rem",
+            alignItems: "center", marginBottom: 12,
           }}>
             <p style={{
-              fontSize: "0.78rem", fontWeight: 700,
-              color: "#2E5E3E", textTransform: "uppercase",
-              letterSpacing: "0.05em",
+              fontSize: theme.font.size.xs, fontWeight: 700,
+              color: theme.colors.textMuted, textTransform: "uppercase",
+              letterSpacing: "1px",
             }}>
               Filtres palmiers
             </p>
@@ -133,12 +133,13 @@ export default function MapFilters({ onFiltresChange }) {
               <button
                 onClick={reset}
                 style={{
-                  fontSize: "0.72rem", color: "#ef4444",
+                  display: "flex", alignItems: "center", gap: 4,
+                  fontSize: theme.font.size.xs, color: theme.colors.danger,
                   background: "none", border: "none",
                   cursor: "pointer", fontWeight: 600,
                 }}
               >
-                ✕ Réinitialiser
+                <X size={12} /> Réinitialiser
               </button>
             )}
           </div>
@@ -208,16 +209,18 @@ export default function MapFilters({ onFiltresChange }) {
                   etatSite,
                   sexe,
                   age,
-                  variete: e.target.value,  // ← valeur fraîche directement
+                  variete: e.target.value,  // valeur fraîche directement
                 });
               }}
               placeholder="Ex: NJD, SAIR, BSTN..."
               style={{
-                width: "100%", padding: "0.4rem 0.6rem",
-                borderRadius: "0.4rem",
-                border: "1px solid #d1d5db",
-                fontSize: "0.8rem",
+                width: "100%", padding: "8px 10px",
+                borderRadius: theme.radius.md,
+                border: `1px solid ${theme.colors.borderStrong}`,
+                fontSize: theme.font.size.sm,
                 boxSizing: "border-box",
+                outline: "none",
+                fontFamily: theme.font.family,
               }}
             />
           </Section>
@@ -230,15 +233,15 @@ export default function MapFilters({ onFiltresChange }) {
 
 function Section({ titre, children }) {
   return (
-    <div style={{ marginBottom: "0.75rem" }}>
+    <div style={{ marginBottom: 12 }}>
       <p style={{
-        fontSize: "0.7rem", fontWeight: 700,
-        color: "#6b7280", textTransform: "uppercase",
-        letterSpacing: "0.04em", marginBottom: "0.4rem",
+        fontSize: "10px", fontWeight: 700,
+        color: theme.colors.textMuted, textTransform: "uppercase",
+        letterSpacing: "0.6px", marginBottom: 6,
       }}>
         {titre}
       </p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {children}
       </div>
     </div>
@@ -250,18 +253,17 @@ function CheckItem({ label, couleur, actif, onClick }) {
     <button
       onClick={onClick}
       style={{
-        display: "flex", alignItems: "center", gap: "0.3rem",
-        padding: "0.25rem 0.6rem", borderRadius: "1rem",
-        border: `1px solid ${actif ? (couleur || "#2E5E3E") : "#e5e7eb"}`,
-        backgroundColor: actif ? (couleur || "#2E5E3E") : "white",
-        color: actif ? "white" : "#374151",
-        cursor: "pointer", fontSize: "0.78rem", fontWeight: 500,
-        transition: "all 0.15s",
+        display: "flex", alignItems: "center", gap: 5,
+        padding: "4px 10px", borderRadius: theme.radius.lg,
+        border: `1px solid ${actif ? (couleur || theme.colors.primary) : theme.colors.border}`,
+        backgroundColor: actif ? (couleur || theme.colors.primary) : theme.colors.surface,
+        color: actif ? "white" : theme.colors.textSecondary,
+        cursor: "pointer", fontSize: theme.font.size.xs, fontWeight: 600,
       }}
     >
       {couleur && (
         <span style={{
-          width: "8px", height: "8px", borderRadius: "50%",
+          width: 6, height: 6, borderRadius: "50%",
           backgroundColor: actif ? "white" : couleur,
           flexShrink: 0,
         }} />

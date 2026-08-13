@@ -1,26 +1,23 @@
+import { TreePalm, LandPlot } from "lucide-react";
+import { theme } from "../../styles/theme";
+
 export default function MapLegend({ visible }) {
   if (!visible) return null;
 
   const etats = [
-    { label: "Bon état",   couleur: "#22c55e", code: "B"  },
-    { label: "Moyen",      couleur: "#f97316", code: "MO" },
-    { label: "Mauvais",    couleur: "#ef4444", code: "MA" },
-    { label: "Mort",       couleur: "#1f2937", code: "MR" },
-    { label: "Vide",       couleur: "#6b7280", code: "AB" },
-  ];
-
-  const statuts = [
-    { label: "Active",     couleur: "#22c55e" },
-    { label: "En repos",   couleur: "#f97316" },
-    { label: "Abandonnée", couleur: "#6b7280" },
+    { label: "Bon état",   couleur: theme.colors.santeBon,    code: "B"  },
+    { label: "Moyen",      couleur: theme.colors.santeMoyen,  code: "MO" },
+    { label: "Mauvais",    couleur: theme.colors.santeMauvais, code: "MA" },
+    { label: "Mort",       couleur: theme.colors.santeMort,   code: "MR" },
+    { label: "Vide",       couleur: theme.colors.textMuted,   code: "AB" },
   ];
 
   const types = [
-    { label: "Ferme",    couleur: "#dc2626", style: "dashed" },
-    { label: "Zone",     couleur: "#3b82f6", style: "dashed" },
-    { label: "Active",   couleur: "#22c55e", style: "solid"  },
-    { label: "En repos", couleur: "#f97316", style: "solid"  },
-    { label: "Abandonnee", couleur: "#6b7280", style: "solid" },
+    { label: "Ferme",      couleur: theme.colors.typeFerme, style: "dashed" },
+    { label: "Zone",       couleur: theme.colors.typeZone,  style: "dashed" },
+    { label: "Active",     couleur: theme.colors.success,   style: "solid"  },
+    { label: "En repos",   couleur: theme.colors.warning,   style: "solid"  },
+    { label: "Abandonnée", couleur: theme.colors.textMuted, style: "solid"  },
   ];
 
   return (
@@ -28,42 +25,30 @@ export default function MapLegend({ visible }) {
       position: "absolute",
       bottom: "2rem",
       right: "0.75rem",
-      backgroundColor: "white",
-      borderRadius: "0.75rem",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      padding: "0.75rem 1rem",
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      boxShadow: theme.shadow.md,
+      border: `1px solid ${theme.colors.border}`,
+      padding: 16,
       zIndex: 10,
-      minWidth: "160px",
-      border: "1px solid #e5e7eb",
+      minWidth: 170,
+      fontFamily: theme.font.family,
     }}>
 
       {/* Titre */}
-      <p style={{
-        fontSize: "0.7rem", fontWeight: 700,
-        color: "#2E5E3E", textTransform: "uppercase",
-        letterSpacing: "0.05em", marginBottom: "0.6rem",
-      }}>
-        🌴 État sanitaire
+      <p style={legendTitleStyle}>
+        <TreePalm size={12} /> État sanitaire
       </p>
 
       {/* Palmiers */}
-      <div style={{
-        display: "flex", flexDirection: "column", gap: "0.35rem",
-        marginBottom: "0.75rem",
-      }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
         {etats.map(({ label, couleur, code }) => (
-          <div key={code} style={{
-            display: "flex", alignItems: "center", gap: "0.5rem"
-          }}>
-            <div style={{
-              width: "12px", height: "12px",
-              borderRadius: "50%",
-              backgroundColor: couleur,
-              border: "1.5px solid white",
-              boxShadow: "0 0 0 1px rgba(0,0,0,0.2)",
-              flexShrink: 0,
+          <div key={code} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: "50%",
+              backgroundColor: couleur, flexShrink: 0,
             }} />
-            <span style={{ fontSize: "0.78rem", color: "#374151" }}>
+            <span style={{ fontSize: theme.font.size.sm, color: theme.colors.textSecondary }}>
               {label}
             </span>
           </div>
@@ -71,45 +56,38 @@ export default function MapLegend({ visible }) {
       </div>
 
       {/* Séparateur */}
-      <div style={{
-        height: "1px", backgroundColor: "#f3f4f6",
-        marginBottom: "0.6rem",
-      }} />
+      <div style={{ height: 1, backgroundColor: theme.colors.border, marginBottom: 12 }} />
 
       {/* Titre parcelles */}
-      <p style={{
-        fontSize: "0.7rem", fontWeight: 700,
-        color: "#2E5E3E", textTransform: "uppercase",
-        letterSpacing: "0.05em", marginBottom: "0.5rem",
-      }}>
-        📐 Parcelles
+      <p style={legendTitleStyle}>
+        <LandPlot size={12} /> Parcelles
       </p>
 
-
       {/* Types parcelles */}
-      <div style={{
-        display: "flex", flexDirection: "column", gap: "0.35rem",
-        marginTop: "0.75rem",
-      }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {types.map(({ label, couleur, style }) => (
-          <div key={label} style={{
-            display: "flex", alignItems: "center", gap: "0.5rem"
-          }}>
-            <div style={{
-              width: "14px", height: "8px",
-              backgroundColor: couleur,
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{
+              width: 14, height: 6,
+              backgroundColor: style === "dashed" ? "transparent" : couleur,
               border: `2px ${style} ${couleur}`,
-              borderRadius: "2px",
+              borderRadius: 2,
               flexShrink: 0,
             }} />
-            <span style={{ fontSize: "0.78rem", color: "#374151" }}>
+            <span style={{ fontSize: theme.font.size.sm, color: theme.colors.textSecondary }}>
               {label}
             </span>
           </div>
         ))}
       </div>
 
-
     </div>
   );
 }
+
+const legendTitleStyle = {
+  display: "flex", alignItems: "center", gap: 6,
+  fontSize: theme.font.size.xs, fontWeight: 700,
+  color: theme.colors.textMuted, textTransform: "uppercase",
+  letterSpacing: "1px", marginBottom: 8,
+};
