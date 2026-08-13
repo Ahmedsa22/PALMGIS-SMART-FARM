@@ -1,10 +1,14 @@
 import { useState } from "react";
+import { FileDown, X, AlertTriangle, LandPlot } from "lucide-react";
 import { genererCarte } from "../../api/parcelles";
+import { theme } from "../../styles/theme";
+import Button from "../ui/Button";
+import { SectionTitle } from "../ui/Badge";
 
 export default function CarteForm({ parcelle, onCancel }) {
   const p = parcelle.properties;
 
-  // ← Récupère l'id à tous les niveaux possibles
+  // Récupère l'id à tous les niveaux possibles
   const parcelleId = parcelle?.properties?.id
                   ?? parcelle?.id
                   ?? p?.id;
@@ -20,11 +24,9 @@ export default function CarteForm({ parcelle, onCancel }) {
     setIsLoading(true);
     setError(null);
 
-    console.log("📤 parcelle_id envoyé:", parcelleId);
-
     try {
       await genererCarte({
-        parcelle_id: parcelleId,  // ← parcelleId pas p.id
+        parcelle_id: parcelleId,
         type_carte:  typeCarte,
         orientation,
         titre,
@@ -37,58 +39,40 @@ export default function CarteForm({ parcelle, onCancel }) {
     }
   }
 
-  const inputStyle = {
-    width: "100%", padding: "0.4rem 0.6rem",
-    borderRadius: "0.4rem", border: "1px solid #d1d5db",
-    fontSize: "0.8rem", boxSizing: "border-box",
-    backgroundColor: "white",
-  };
-
-  const labelStyle = {
-    display: "block", fontSize: "0.75rem",
-    fontWeight: 600, color: "#374151", marginBottom: "0.2rem",
-  };
-
   return (
-    <div style={{ padding: "1rem" }}>
+    <div style={{ padding: 16 }}>
 
       {/* En-tête */}
       <div style={{
         display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "1rem",
+        alignItems: "center", marginBottom: 16,
       }}>
         <div>
-          <p style={{
-            fontSize: "0.7rem", color: "#9ca3af",
-            textTransform: "uppercase", fontWeight: 600,
+          <SectionTitle style={{ marginBottom: 4 }}>Générer</SectionTitle>
+          <h2 style={{
+            display: "flex", alignItems: "center", gap: 6,
+            fontSize: theme.font.size.base, fontWeight: 700, color: theme.colors.text,
           }}>
-            Générer
-          </p>
-          <h2 style={{ fontSize: "1rem", fontWeight: "bold", color: "#2E5E3E" }}>
-            🗺️ Carte PDF
+            <FileDown size={16} color={theme.colors.primary} /> Carte PDF
           </h2>
         </div>
-        <button
-          onClick={onCancel}
-          style={{
-            background: "none", border: "none",
-            cursor: "pointer", fontSize: "1.2rem", color: "#9ca3af",
-          }}
-        >
-          ✕
+        <button onClick={onCancel} style={closeButtonStyle}>
+          <X size={18} />
         </button>
       </div>
 
       {/* Contexte */}
       <div style={{
-        backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
-        borderRadius: "0.5rem", padding: "0.5rem 0.75rem",
-        marginBottom: "1rem", fontSize: "0.78rem", color: "#166534",
+        display: "flex", alignItems: "center", gap: 6,
+        border: `1px solid ${theme.colors.border}`,
+        borderRadius: theme.radius.md, padding: "8px 12px",
+        marginBottom: 16, fontSize: theme.font.size.sm, color: theme.colors.textSecondary,
       }}>
-        📐 Parcelle : <strong>{p.nom}</strong> — {p.superficie_ha} ha
+        <LandPlot size={14} color={theme.colors.textMuted} />
+        Parcelle : <strong style={{ color: theme.colors.text }}>{p.nom}</strong> — {p.superficie_ha} ha
         {!parcelleId && (
-          <span style={{ color: "#dc2626", marginLeft: "0.5rem" }}>
-            ⚠️ ID introuvable
+          <span style={{ color: theme.colors.danger, marginLeft: 6, fontWeight: 600 }}>
+            ID introuvable
           </span>
         )}
       </div>
@@ -96,7 +80,7 @@ export default function CarteForm({ parcelle, onCancel }) {
       <form onSubmit={handleGenerer}>
 
         {/* Titre */}
-        <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ marginBottom: 12 }}>
           <label style={labelStyle}>Titre de la carte</label>
           <input
             type="text"
@@ -107,7 +91,7 @@ export default function CarteForm({ parcelle, onCancel }) {
         </div>
 
         {/* Type de carte */}
-        <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ marginBottom: 12 }}>
           <label style={labelStyle}>Type de carte</label>
           <select
             value={typeCarte}
@@ -122,24 +106,27 @@ export default function CarteForm({ parcelle, onCancel }) {
         </div>
 
         {/* Orientation */}
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ marginBottom: 16 }}>
           <label style={labelStyle}>Orientation</label>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            {["portrait", "landscape"].map(o => (
+          <div style={{ display: "flex", gap: 8 }}>
+            {[
+              { value: "portrait", label: "Portrait" },
+              { value: "landscape", label: "Paysage" },
+            ].map(({ value, label }) => (
               <button
-                key={o}
+                key={value}
                 type="button"
-                onClick={() => setOrientation(o)}
+                onClick={() => setOrientation(value)}
                 style={{
-                  flex: 1, padding: "0.5rem",
-                  borderRadius: "0.4rem",
-                  border: `2px solid ${orientation === o ? "#2E5E3E" : "#e5e7eb"}`,
-                  backgroundColor: orientation === o ? "#2E5E3E" : "white",
-                  color: orientation === o ? "white" : "#374151",
-                  cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
+                  flex: 1, padding: "8px",
+                  borderRadius: theme.radius.md,
+                  border: `1px solid ${orientation === value ? theme.colors.primary : theme.colors.border}`,
+                  backgroundColor: orientation === value ? theme.colors.primary : theme.colors.surface,
+                  color: orientation === value ? "white" : theme.colors.textSecondary,
+                  cursor: "pointer", fontSize: theme.font.size.sm, fontWeight: 600,
                 }}
               >
-                {o === "portrait" ? "📄 Portrait" : "📋 Paysage"}
+                {label}
               </button>
             ))}
           </div>
@@ -147,45 +134,58 @@ export default function CarteForm({ parcelle, onCancel }) {
 
         {/* Erreur */}
         {error && (
-          <div style={{
-            backgroundColor: "#fef2f2", border: "1px solid #fecaca",
-            borderRadius: "0.4rem", padding: "0.5rem",
-            marginBottom: "0.75rem", fontSize: "0.8rem", color: "#dc2626",
-          }}>
-            ⚠️ {error}
+          <div style={errorBoxStyle}>
+            <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+            {error}
           </div>
         )}
 
         {/* Boutons */}
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{
-              flex: 1, padding: "0.6rem", borderRadius: "0.4rem",
-              backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb",
-              cursor: "pointer", fontSize: "0.82rem",
-              color: "#374151", fontWeight: 600,
-            }}
-          >
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button type="button" variant="secondary" onClick={onCancel} style={{ flex: 1 }}>
             Annuler
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
+            icon={FileDown}
             disabled={isLoading || !parcelleId}
-            style={{
-              flex: 2, padding: "0.6rem", borderRadius: "0.4rem",
-              backgroundColor: isLoading || !parcelleId ? "#9ca3af" : "#2E5E3E",
-              border: "none", color: "white",
-              cursor: isLoading || !parcelleId ? "not-allowed" : "pointer",
-              fontSize: "0.82rem", fontWeight: 600,
-            }}
+            style={{ flex: 2 }}
           >
-            {isLoading ? "Génération..." : "🗺️ Télécharger PDF"}
-          </button>
+            {isLoading ? "Génération..." : "Télécharger PDF"}
+          </Button>
         </div>
 
       </form>
     </div>
   );
 }
+
+const inputStyle = {
+  width: "100%", padding: "8px 10px",
+  borderRadius: theme.radius.md, border: `1px solid ${theme.colors.borderStrong}`,
+  fontSize: theme.font.size.sm, boxSizing: "border-box",
+  backgroundColor: theme.colors.surface, outline: "none",
+  fontFamily: theme.font.family,
+};
+
+const labelStyle = {
+  display: "block", fontSize: theme.font.size.xs,
+  fontWeight: 600, color: theme.colors.textSecondary, marginBottom: 4,
+};
+
+const closeButtonStyle = {
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "none", border: "none",
+  cursor: "pointer", color: theme.colors.textMuted,
+  width: 28, height: 28,
+};
+
+const errorBoxStyle = {
+  display: "flex", alignItems: "flex-start", gap: 6,
+  borderLeft: `3px solid ${theme.colors.danger}`,
+  backgroundColor: "#FEF2F2",
+  borderRadius: theme.radius.sm,
+  padding: "8px 10px",
+  marginBottom: 12, fontSize: theme.font.size.xs, color: theme.colors.danger,
+};
