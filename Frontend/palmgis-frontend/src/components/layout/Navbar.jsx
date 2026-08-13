@@ -1,11 +1,21 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Menu, TreePalm, Map, Wrench, LayoutDashboard, Users, LogOut,
+} from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import useMapStore from "../../store/mapStore";
 import NotificationBadge from "../notifications/NotificationBadge";
+import { theme } from "../../styles/theme";
 
+const NAV_ITEMS = [
+  { path: "/map",           label: "Carte",         icon: Map },
+  { path: "/interventions", label: "Interventions", icon: Wrench },
+  { path: "/dashboard",     label: "Dashboard",      icon: LayoutDashboard },
+];
 
 export default function Navbar() {
   const navigate  = useNavigate();
+  const location  = useLocation();
   const user      = useAuthStore((state) => state.user);
   const logout    = useAuthStore((state) => state.logout);
   const toggleSidebar = useMapStore((state) => state.toggleSidebar);
@@ -15,116 +25,131 @@ export default function Navbar() {
     navigate("/login", { replace: true });
   }
 
+  const items = [
+    ...NAV_ITEMS,
+    ...(user?.role === "manager"
+      ? [{ path: "/users", label: "Utilisateurs", icon: Users }]
+      : []),
+  ];
+
   return (
     <nav style={{
         height: "56px",
-        backgroundColor: "#2E5E3E",
+        backgroundColor: theme.colors.primary,
         color: "white",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 1rem",
+        padding: "0 16px",
         flexShrink: 0,
-        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
         zIndex: 10,
+        fontFamily: theme.font.family,
         }}>
 
       {/* Gauche — logo + bouton sidebar */}
-      <div className="flex items-center gap-3">
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
 
-        {/* Bouton toggle sidebar */}
         <button
           onClick={toggleSidebar}
-          className="p-1.5 rounded hover:bg-primary-600 transition"
           title="Ouvrir / fermer le panneau"
+          style={iconButtonStyle}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor"
-               viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round"
-                  strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Menu size={18} />
         </button>
 
-        {/* Logo et nom */}
-        <div className="flex items-center gap-2 cursor-pointer"
-             onClick={() => navigate("/map")}>
-          <span className="text-xl">🌴</span>
-          <span className="font-bold text-base hidden sm:block">
+        <div
+          onClick={() => navigate("/map")}
+          style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+        >
+          <TreePalm size={20} />
+          <span style={{ fontWeight: 700, fontSize: theme.font.size.lg, letterSpacing: "0.2px" }}>
             PalmGIS Smart Farm
           </span>
         </div>
-
       </div>
 
       {/* Centre — navigation */}
-    
-      <div className="hidden md:flex items-center gap-1">
-        <NavLink onClick={() => navigate("/map")}>
-          🗺️ Carte
-        </NavLink>
-        <NavLink onClick={() => navigate("/interventions")}>
-          📋 Interventions
-        </NavLink>
-        <NavLink onClick={() => navigate("/dashboard")}>
-          📊 Dashboard
-        </NavLink>
-        {/* ⚠️ PAS de NavLink autour de NotificationBadge */}
-        {/* Dans Navbar.jsx, dans les liens de navigation */}
-      {user?.role === "manager" && (
-        <NavLink onClick={() => navigate("/users")}>
-          👥 Utilisateurs
-        </NavLink>
-      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 4, height: "100%" }}>
+        {items.map(({ path, label, icon: Icon }) => (
+          <NavLink
+            key={path}
+            active={location.pathname.startsWith(path)}
+            onClick={() => navigate(path)}
+          >
+            <Icon size={15} />
+            {label}
+          </NavLink>
+        ))}
       </div>
 
       {/* Droite — utilisateur + notifications + déconnexion */}
-      <div className="flex items-center gap-3">
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 
-        {/* NotificationBadge directement ici, pas dans un NavLink */}
         <NotificationBadge />
 
-        {/* Infos utilisateur */}
-        <div className="text-right hidden sm:block">
-          <p className="text-sm font-semibold leading-tight">
+        <div style={{ textAlign: "right" }}>
+          <p style={{ fontSize: theme.font.size.sm, fontWeight: 600, lineHeight: 1.2 }}>
             {user?.username}
-          </p>
-          <p className="text-xs text-primary-200 leading-tight">
-            {user?.role === "manager" ? "Gestionnaire" : "Consultant"}
           </p>
         </div>
 
-        {/* Badge rôle */}
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium
-          ${user?.role === "manager"
-            ? "bg-accent text-white"
-            : "bg-primary-300 text-primary-800"
-          }`}>
+        <span style={{
+          fontSize: theme.font.size.xs,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+          fontWeight: 600,
+          padding: "3px 8px",
+          borderRadius: theme.radius.sm,
+          border: `1px solid ${user?.role === "manager" ? theme.colors.accent : "rgba(255,255,255,0.35)"}`,
+          color: user?.role === "manager" ? theme.colors.accent : "rgba(255,255,255,0.85)",
+        }}>
           {user?.role === "manager" ? "Manager" : "Viewer"}
         </span>
 
-        {/* Bouton déconnexion */}
         <button
           onClick={handleLogout}
-          className="text-xs bg-primary-600 hover:bg-primary-700
-                    px-3 py-1.5 rounded-lg transition font-medium"
+          title="Déconnexion"
+          style={iconButtonStyle}
         >
-          Déconnexion
+          <LogOut size={16} />
         </button>
       </div>
     </nav>
   );
 }
 
-/**
- * Composant interne — lien de navigation dans la Navbar.
- * Extrait pour éviter la répétition des classes Tailwind.
- */
-function NavLink({ onClick, children }) {
+const iconButtonStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 32,
+  height: 32,
+  padding: 0,
+  border: "none",
+  borderRadius: theme.radius.sm,
+  background: "transparent",
+  color: "white",
+  cursor: "pointer",
+};
+
+function NavLink({ onClick, active, children }) {
   return (
     <button
       onClick={onClick}
-      className="text-sm px-3 py-1.5 rounded-lg hover:bg-primary-600
-                 transition font-medium"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        height: "100%",
+        padding: "0 14px",
+        border: "none",
+        borderBottom: active ? `2px solid ${theme.colors.accent}` : "2px solid transparent",
+        background: "transparent",
+        color: active ? "white" : "rgba(255,255,255,0.75)",
+        fontSize: theme.font.size.sm,
+        fontWeight: 600,
+        cursor: "pointer",
+      }}
     >
       {children}
     </button>
