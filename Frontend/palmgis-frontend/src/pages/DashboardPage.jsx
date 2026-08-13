@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { LayoutDashboard, ChevronLeft, LandPlot, TreePalm, Wrench, Bell } from "lucide-react";
 import { getParcelles } from "../api/parcelles";
 import { getPalms } from "../api/palms";
 import { getInterventions } from "../api/interventions";
 import { getNotifications } from "../api/notifications";
 import Navbar from "../components/layout/Navbar";
+import { theme } from "../styles/theme";
+import Button from "../components/ui/Button";
+import { SectionTitle } from "../components/ui/Badge";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -87,43 +91,39 @@ export default function DashboardPage() {
   return (
     <div style={{
       display: "flex", flexDirection: "column",
-      height: "100vh", backgroundColor: "#f9fafb",
-      overflow: "hidden",
+      height: "100vh", backgroundColor: theme.colors.bg,
+      overflow: "hidden", fontFamily: theme.font.family,
     }}>
       <Navbar />
 
       {/* En-tête */}
       <div style={{
-        backgroundColor: "white", padding: "1rem 1.5rem",
-        borderBottom: "1px solid #e5e7eb",
+        backgroundColor: theme.colors.surface, padding: "16px 24px",
+        borderBottom: `1px solid ${theme.colors.border}`,
         display: "flex", justifyContent: "space-between",
         alignItems: "center", flexShrink: 0,
       }}>
-        <h1 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#2E5E3E" }}>
-          📊 Tableau de bord
+        <h1 style={{
+          display: "flex", alignItems: "center", gap: 8,
+          fontSize: theme.font.size.lg, fontWeight: 700, color: theme.colors.text,
+        }}>
+          <LayoutDashboard size={18} color={theme.colors.primary} /> Tableau de bord
         </h1>
-        <button
-          onClick={() => navigate("/map")}
-          style={{
-            padding: "0.5rem 0.75rem", borderRadius: "0.5rem",
-            backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb",
-            cursor: "pointer", fontSize: "0.8rem", color: "#374151",
-          }}
-        >
-          ← Carte
-        </button>
+        <Button variant="secondary" icon={ChevronLeft} fullWidth={false} onClick={() => navigate("/map")}>
+          Carte
+        </Button>
       </div>
 
       {/* Contenu scrollable */}
       <div style={{
         flex: 1, overflowY: "auto",
-        padding: "1.5rem", minHeight: 0,
+        padding: 24, minHeight: 0,
       }}>
 
         {isLoading ? (
           <p style={{
-            textAlign: "center", color: "#9ca3af",
-            padding: "3rem", fontSize: "0.9rem",
+            textAlign: "center", color: theme.colors.textMuted,
+            padding: 48, fontSize: theme.font.size.base,
           }}>
             Chargement des statistiques...
           </p>
@@ -133,57 +133,52 @@ export default function DashboardPage() {
             <div style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-              gap: "1rem", marginBottom: "1.5rem",
+              gap: 16, marginBottom: 24,
             }}>
               {[
                 {
                   label: "Parcelles",
                   valeur: stats.nbParcelles,
                   sous: `${stats.superficieTotale} ha total`,
-                  icone: "📐", couleur: "#2E5E3E",
+                  Icone: LandPlot, couleur: theme.colors.primary,
                 },
                 {
                   label: "Palmiers",
                   valeur: stats.nbPalms,
                   sous: `${stats.femelles} femelles · ${stats.males} mâles`,
-                  icone: "🌴", couleur: "#16a34a",
+                  Icone: TreePalm, couleur: theme.colors.success,
                 },
                 {
                   label: "Interventions",
                   valeur: stats.nbInterventions,
                   sous: "au total",
-                  icone: "📋", couleur: "#B08D57",
+                  Icone: Wrench, couleur: theme.colors.accent,
                 },
                 {
                   label: "Notifications",
                   valeur: stats.nbNotifications,
                   sous: "en attente",
-                  icone: "🔔", couleur: "#ef4444",
+                  Icone: Bell, couleur: theme.colors.danger,
                 },
-              ].map(({ label, valeur, sous, icone, couleur }) => (
-                <div key={label} style={{
-                  backgroundColor: "white",
-                  borderRadius: "0.75rem", padding: "1.25rem",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-                  border: "1px solid #f3f4f6",
-                }}>
+              ].map(({ label, valeur, sous, Icone, couleur }) => (
+                <div key={label} style={cardStyle}>
                   <div style={{
                     display: "flex", justifyContent: "space-between",
-                    alignItems: "flex-start", marginBottom: "0.5rem",
+                    alignItems: "flex-start", marginBottom: 8,
                   }}>
-                    <span style={{ fontSize: "1.5rem" }}>{icone}</span>
+                    <Icone size={20} color={couleur} />
                     <span style={{
-                      fontSize: "1.8rem", fontWeight: 800, color: couleur,
+                      fontSize: "28px", fontWeight: 800, color: couleur,
                     }}>
                       {valeur}
                     </span>
                   </div>
                   <p style={{
-                    fontSize: "0.82rem", fontWeight: 600, color: "#374151",
+                    fontSize: theme.font.size.sm, fontWeight: 600, color: theme.colors.text,
                   }}>
                     {label}
                   </p>
-                  <p style={{ fontSize: "0.72rem", color: "#9ca3af" }}>
+                  <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted }}>
                     {sous}
                   </p>
                 </div>
@@ -194,51 +189,38 @@ export default function DashboardPage() {
             <div style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
-              gap: "1rem", marginBottom: "1.5rem",
+              gap: 16, marginBottom: 24,
             }}>
 
               {/* État sanitaire */}
-              <div style={{
-                backgroundColor: "white", borderRadius: "0.75rem",
-                padding: "1.25rem",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-                border: "1px solid #f3f4f6",
-              }}>
-                <h3 style={{
-                  fontSize: "0.85rem", fontWeight: 700,
-                  color: "#2E5E3E", marginBottom: "1rem",
-                }}>
-                  🌿 État sanitaire des palmiers
-                </h3>
+              <div style={cardStyle}>
+                <SectionTitle style={{ marginBottom: 16 }}>État sanitaire des palmiers</SectionTitle>
                 {[
-                  { label: "Bon",     code: "B",  couleur: "#22c55e" },
-                  { label: "Moyen",   code: "MO", couleur: "#f97316" },
-                  { label: "Mauvais", code: "MA", couleur: "#ef4444" },
-                  { label: "Mort",    code: "MR", couleur: "#1f2937" },
+                  { label: "Bon",     code: "B",  couleur: theme.colors.santeBon },
+                  { label: "Moyen",   code: "MO", couleur: theme.colors.santeMoyen },
+                  { label: "Mauvais", code: "MA", couleur: theme.colors.santeMauvais },
+                  { label: "Mort",    code: "MR", couleur: theme.colors.santeMort },
                 ].map(({ label, code, couleur }) => {
                   const nb      = stats.parEtat[code] || 0;
                   const pct     = stats.nbPalms
                     ? Math.round((nb / stats.nbPalms) * 100)
                     : 0;
                   return (
-                    <div key={code} style={{ marginBottom: "0.6rem" }}>
+                    <div key={code} style={{ marginBottom: 10 }}>
                       <div style={{
                         display: "flex", justifyContent: "space-between",
-                        fontSize: "0.78rem", marginBottom: "0.2rem",
+                        fontSize: theme.font.size.sm, marginBottom: 4,
                       }}>
-                        <span style={{ color: "#374151" }}>{label}</span>
-                        <span style={{ color: "#6b7280" }}>
+                        <span style={{ color: theme.colors.text }}>{label}</span>
+                        <span style={{ color: theme.colors.textMuted }}>
                           {nb} ({pct}%)
                         </span>
                       </div>
-                      <div style={{
-                        height: "6px", backgroundColor: "#f3f4f6",
-                        borderRadius: "3px", overflow: "hidden",
-                      }}>
+                      <div style={barTrackStyle}>
                         <div style={{
                           height: "100%", width: `${pct}%`,
                           backgroundColor: couleur,
-                          borderRadius: "3px",
+                          borderRadius: 3,
                           transition: "width 0.8s ease",
                         }} />
                       </div>
@@ -248,46 +230,33 @@ export default function DashboardPage() {
               </div>
 
               {/* Âge des palmiers */}
-              <div style={{
-                backgroundColor: "white", borderRadius: "0.75rem",
-                padding: "1.25rem",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-                border: "1px solid #f3f4f6",
-              }}>
-                <h3 style={{
-                  fontSize: "0.85rem", fontWeight: 700,
-                  color: "#2E5E3E", marginBottom: "1rem",
-                }}>
-                  🌱 Âge des palmiers
-                </h3>
+              <div style={cardStyle}>
+                <SectionTitle style={{ marginBottom: 16 }}>Âge des palmiers</SectionTitle>
                 {[
-                  { label: "Jeunes",  code: "JP", couleur: "#86efac" },
-                  { label: "Adultes", code: "A",  couleur: "#2E5E3E" },
-                  { label: "Vieux",   code: "V",  couleur: "#92400e" },
+                  { label: "Jeunes",  code: "JP", couleur: theme.colors.santeBon },
+                  { label: "Adultes", code: "A",  couleur: theme.colors.primary },
+                  { label: "Vieux",   code: "V",  couleur: theme.colors.accent },
                 ].map(({ label, code, couleur }) => {
                   const nb  = stats.parAge[code] || 0;
                   const pct = stats.nbPalms
                     ? Math.round((nb / stats.nbPalms) * 100)
                     : 0;
                   return (
-                    <div key={code} style={{ marginBottom: "0.6rem" }}>
+                    <div key={code} style={{ marginBottom: 10 }}>
                       <div style={{
                         display: "flex", justifyContent: "space-between",
-                        fontSize: "0.78rem", marginBottom: "0.2rem",
+                        fontSize: theme.font.size.sm, marginBottom: 4,
                       }}>
-                        <span style={{ color: "#374151" }}>{label}</span>
-                        <span style={{ color: "#6b7280" }}>
+                        <span style={{ color: theme.colors.text }}>{label}</span>
+                        <span style={{ color: theme.colors.textMuted }}>
                           {nb} ({pct}%)
                         </span>
                       </div>
-                      <div style={{
-                        height: "6px", backgroundColor: "#f3f4f6",
-                        borderRadius: "3px", overflow: "hidden",
-                      }}>
+                      <div style={barTrackStyle}>
                         <div style={{
                           height: "100%", width: `${pct}%`,
                           backgroundColor: couleur,
-                          borderRadius: "3px",
+                          borderRadius: 3,
                           transition: "width 0.8s ease",
                         }} />
                       </div>
@@ -297,36 +266,36 @@ export default function DashboardPage() {
 
                 {/* Répartition sexe */}
                 <div style={{
-                  marginTop: "1rem", paddingTop: "1rem",
-                  borderTop: "1px solid #f3f4f6",
+                  marginTop: 16, paddingTop: 16,
+                  borderTop: `1px solid ${theme.colors.border}`,
                 }}>
                   <p style={{
-                    fontSize: "0.78rem", fontWeight: 600,
-                    color: "#374151", marginBottom: "0.5rem",
+                    fontSize: theme.font.size.sm, fontWeight: 600,
+                    color: theme.colors.text, marginBottom: 8,
                   }}>
                     Répartition par sexe
                   </p>
-                  <div style={{ display: "flex", gap: "1rem" }}>
+                  <div style={{ display: "flex", gap: 16 }}>
                     <div style={{ textAlign: "center" }}>
                       <p style={{
-                        fontSize: "1.2rem", fontWeight: 800,
-                        color: "#2E5E3E",
+                        fontSize: theme.font.size.xl, fontWeight: 800,
+                        color: theme.colors.primary,
                       }}>
                         {stats.femelles}
                       </p>
-                      <p style={{ fontSize: "0.72rem", color: "#6b7280" }}>
-                        🌴 Femelles
+                      <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted }}>
+                        Femelles
                       </p>
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <p style={{
-                        fontSize: "1.2rem", fontWeight: 800,
-                        color: "#B08D57",
+                        fontSize: theme.font.size.xl, fontWeight: 800,
+                        color: theme.colors.accent,
                       }}>
                         {stats.males}
                       </p>
-                      <p style={{ fontSize: "0.72rem", color: "#6b7280" }}>
-                        🌴 Mâles
+                      <p style={{ fontSize: theme.font.size.xs, color: theme.colors.textMuted }}>
+                        Mâles
                       </p>
                     </div>
                   </div>
@@ -335,25 +304,16 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Ligne 3 : Dernières interventions ── */}
-            <div style={{
-              backgroundColor: "white", borderRadius: "0.75rem",
-              padding: "1.25rem",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-              border: "1px solid #f3f4f6",
-            }}>
+            <div style={cardStyle}>
               <div style={{
                 display: "flex", justifyContent: "space-between",
-                alignItems: "center", marginBottom: "1rem",
+                alignItems: "center", marginBottom: 16,
               }}>
-                <h3 style={{
-                  fontSize: "0.85rem", fontWeight: 700, color: "#2E5E3E",
-                }}>
-                  📋 Dernières interventions
-                </h3>
+                <SectionTitle>Dernières interventions</SectionTitle>
                 <button
                   onClick={() => navigate("/interventions")}
                   style={{
-                    fontSize: "0.75rem", color: "#2E5E3E",
+                    fontSize: theme.font.size.xs, color: theme.colors.primary,
                     background: "none", border: "none",
                     cursor: "pointer", fontWeight: 600,
                   }}
@@ -364,33 +324,30 @@ export default function DashboardPage() {
 
               {stats.dernieresInterventions.length === 0 ? (
                 <p style={{
-                  fontSize: "0.85rem", color: "#9ca3af",
-                  textAlign: "center", padding: "1rem",
+                  fontSize: theme.font.size.sm, color: theme.colors.textMuted,
+                  textAlign: "center", padding: 16,
                 }}>
                   Aucune intervention enregistrée.
                 </p>
               ) : (
-                <div style={{
-                  display: "flex", flexDirection: "column", gap: "0.5rem",
-                }}>
+                <div style={{ display: "flex", flexDirection: "column" }}>
                   {stats.dernieresInterventions.map((i) => (
                     <div key={i.id} style={{
                       display: "flex", justifyContent: "space-between",
                       alignItems: "center",
-                      padding: "0.5rem 0.75rem",
-                      backgroundColor: "#f9fafb",
-                      borderRadius: "0.5rem",
-                      fontSize: "0.82rem",
+                      padding: "10px 4px",
+                      borderBottom: `1px solid ${theme.colors.border}`,
+                      fontSize: theme.font.size.sm,
                     }}>
                       <div>
-                        <span style={{ fontWeight: 600, color: "#2E5E3E" }}>
+                        <span style={{ fontWeight: 600, color: theme.colors.text }}>
                           {i.type_intervention_nom || i.type_intervention}
                         </span>
-                        <span style={{ color: "#9ca3af", marginLeft: "0.5rem" }}>
+                        <span style={{ color: theme.colors.textMuted, marginLeft: 8 }}>
                           · {i.parcelle_nom || "—"}
                         </span>
                       </div>
-                      <span style={{ color: "#6b7280", fontSize: "0.75rem" }}>
+                      <span style={{ color: theme.colors.textMuted, fontSize: theme.font.size.xs }}>
                         {formatDate(i.date_intervention)}
                       </span>
                     </div>
@@ -401,7 +358,7 @@ export default function DashboardPage() {
           </>
         ) : (
           <p style={{
-            textAlign: "center", color: "#9ca3af", padding: "3rem",
+            textAlign: "center", color: theme.colors.textMuted, padding: 48,
           }}>
             Impossible de charger les statistiques.
           </p>
@@ -410,3 +367,15 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+const cardStyle = {
+  backgroundColor: theme.colors.surface,
+  borderRadius: theme.radius.lg,
+  padding: 20,
+  border: `1px solid ${theme.colors.border}`,
+};
+
+const barTrackStyle = {
+  height: 6, backgroundColor: theme.colors.border,
+  borderRadius: 3, overflow: "hidden",
+};
