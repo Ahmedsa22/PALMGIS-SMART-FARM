@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { TreePalm, AlertTriangle } from "lucide-react";
 import useAuthStore from "../store/authStore";
+import { theme } from "../styles/theme";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -53,31 +55,50 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-primary-500 flex items-center justify-center p-4">
+    <div style={{
+      minHeight: "100vh",
+      backgroundColor: theme.colors.primary,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16,
+      fontFamily: theme.font.family,
+    }}>
 
-      {/* Carte de login */}
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+      <div style={{
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radius.lg,
+        border: `1px solid ${theme.colors.border}`,
+        boxShadow: theme.shadow.lg,
+        width: "100%",
+        maxWidth: 400,
+        padding: 32,
+      }}>
 
         {/* En-tête */}
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-3">🌴</div>
-          <h1 className="text-2xl font-bold text-primary-500">
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: theme.radius.md,
+            backgroundColor: theme.colors.primaryLight,
+            color: theme.colors.primary,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 12px",
+          }}>
+            <TreePalm size={26} />
+          </div>
+          <h1 style={{ fontSize: theme.font.size.xxl, fontWeight: 700, color: theme.colors.text }}>
             PalmGIS Smart Farm
           </h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <p style={{ color: theme.colors.textSecondary, marginTop: 4, fontSize: theme.font.size.sm }}>
             Connectez-vous pour accéder à la plateforme
           </p>
         </div>
 
         {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
-          {/* Champ username */}
           <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="username" style={labelStyle}>
               Nom d'utilisateur
             </label>
             <input
@@ -87,19 +108,12 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Votre identifiant"
               disabled={isSubmitting}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-primary-500
-                         focus:border-transparent disabled:bg-gray-100
-                         disabled:cursor-not-allowed transition"
+              style={inputStyle}
             />
           </div>
 
-          {/* Champ password */}
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="password" style={labelStyle}>
               Mot de passe
             </label>
             <input
@@ -109,36 +123,50 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Votre mot de passe"
               disabled={isSubmitting}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-primary-500
-                         focus:border-transparent disabled:bg-gray-100
-                         disabled:cursor-not-allowed transition"
+              style={inputStyle}
             />
           </div>
 
-          {/* Message d'erreur */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700
-                            rounded-lg px-4 py-3 text-sm">
-              ⚠️ {error}
+            <div style={{
+              display: "flex", alignItems: "flex-start", gap: 8,
+              borderLeft: `3px solid ${theme.colors.danger}`,
+              backgroundColor: "#FEF2F2",
+              color: theme.colors.danger,
+              padding: "10px 12px",
+              fontSize: theme.font.size.sm,
+              borderRadius: theme.radius.sm,
+            }}>
+              <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Bouton de connexion */}
           <button
             type="submit"
             disabled={isSubmitting || !username.trim() || !password.trim()}
-            className="w-full bg-primary-500 hover:bg-primary-600 text-white
-                       font-semibold py-3 px-4 rounded-lg transition
-                       disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              width: "100%",
+              backgroundColor: theme.colors.primary,
+              color: "white",
+              fontWeight: 600,
+              padding: "10px 14px",
+              borderRadius: theme.radius.md,
+              border: "none",
+              cursor: isSubmitting ? "default" : "pointer",
+              opacity: (isSubmitting || !username.trim() || !password.trim()) ? 0.5 : 1,
+              fontSize: theme.font.size.base,
+            }}
           >
             {isSubmitting ? "Connexion en cours..." : "Se connecter"}
           </button>
 
         </form>
 
-        {/* Pied de page */}
-        <p className="text-center text-gray-400 text-xs mt-8">
+        <p style={{
+          textAlign: "center", color: theme.colors.textMuted,
+          fontSize: theme.font.size.xs, marginTop: 28,
+        }}>
           PalmGIS Smart Farm © 2026
         </p>
 
@@ -146,3 +174,21 @@ export default function LoginPage() {
     </div>
   );
 }
+
+const labelStyle = {
+  display: "block",
+  fontSize: theme.font.size.sm,
+  fontWeight: 600,
+  color: theme.colors.textSecondary,
+  marginBottom: 6,
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "8px 10px",
+  border: `1px solid ${theme.colors.borderStrong}`,
+  borderRadius: theme.radius.md,
+  fontSize: theme.font.size.base,
+  backgroundColor: theme.colors.surface,
+  outline: "none",
+};

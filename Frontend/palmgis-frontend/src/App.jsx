@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TreePalm } from "lucide-react";
 
 import useAuthStore from "./store/authStore";
+import { theme } from "./styles/theme";
 
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
@@ -41,13 +43,19 @@ export default function App() {
   // pour éviter un flash de la page /login
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-primary-500">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🌴</div>
-          <p className="text-white text-xl font-semibold">
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        height: "100vh", backgroundColor: theme.colors.primary,
+        fontFamily: theme.font.family,
+      }}>
+        <div style={{ textAlign: "center", color: "white" }}>
+          <TreePalm size={40} style={{ marginBottom: 12 }} />
+          <p style={{ fontSize: theme.font.size.xl, fontWeight: 600 }}>
             PalmGIS Smart Farm
           </p>
-          <p className="text-primary-200 mt-2">Chargement...</p>
+          <p style={{ color: theme.colors.primaryLight, marginTop: 8, fontSize: theme.font.size.sm }}>
+            Chargement...
+          </p>
         </div>
       </div>
     );
