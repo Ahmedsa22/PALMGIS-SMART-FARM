@@ -2,14 +2,15 @@ import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import { getPalmsByParcelle } from "../../api/palms";
 import useMapStore from "../../store/mapStore";
+import { theme } from "../../styles/theme";
 
 
 
 const COULEURS_SANTE = {
-  B:  "#22c55e",
-  MO: "#f97316",
-  MA: "#ef4444",
-  MR: "#1f2937",
+  B:  theme.colors.santeBon,
+  MO: theme.colors.santeMoyen,
+  MA: theme.colors.santeMauvais,
+  MR: theme.colors.santeMort,
 };
 
 
@@ -161,7 +162,7 @@ export default function PalmLayer({ map, filtres = {} }) {
               15, 14,
               18, 20,
             ],
-            "circle-color": "#B08D57",
+            "circle-color": theme.colors.accent,
             "circle-stroke-width": 2,
             "circle-stroke-color": "#ffffff",
           },
@@ -181,8 +182,7 @@ export default function PalmLayer({ map, filtres = {} }) {
           const coords  = feature.geometry.coordinates.slice();
 
           const etatSante = {
-            B: "✅ Bon", MO: "⚠️ Moyen",
-            MA: "🔴 Mauvais", MR: "💀 Mort"
+            B: "Bon", MO: "Moyen", MA: "Mauvais", MR: "Mort"
           }[props.etat_sante] || props.etat_sante;
 
           const etatSite = {
@@ -194,46 +194,50 @@ export default function PalmLayer({ map, filtres = {} }) {
           }[props.age] || props.age;
 
           const sexe = props.sexe === "M" ? "Mâle" : "Femelle";
+          const santeCouleur = COULEURS_SANTE[props.etat_sante] || theme.colors.textMuted;
 
           const html = `
-            <div style="font-family:system-ui,sans-serif;min-width:200px;padding:4px;">
-              <div style="background:#2E5E3E;color:white;padding:8px 12px;
+            <div style="font-family:${theme.font.family};min-width:200px;padding:4px;">
+              <div style="background:${theme.colors.primary};color:white;padding:8px 12px;
                 margin:-12px -12px 10px -12px;border-radius:6px 6px 0 0;
-                font-weight:bold;font-size:14px;">
-                🌴 ${props.code_uni || "Palmier"}
+                font-weight:600;font-size:14px;">
+                ${props.code_uni || "Palmier"}
               </div>
               <table style="width:100%;font-size:13px;border-collapse:collapse;">
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Code local</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Code local</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">${props.code_local || "—"}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Ligne / N°</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Ligne / N°</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">${props.ligne || "—"} / ${props.numero || "—"}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Variété</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Variété</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">${props.variete || "Non renseignée"}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Sexe</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Sexe</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">${sexe}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Âge</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Âge</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">${age}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">État sanitaire</td>
-                  <td style="font-weight:600;padding:3px 0 3px 8px;">${etatSante}</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">État sanitaire</td>
+                  <td style="font-weight:600;padding:3px 0 3px 8px;">
+                    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;
+                      background:${santeCouleur};margin-right:5px;"></span>${etatSante}
+                  </td>
                 </tr>
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">État site</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">État site</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">${etatSite}</td>
                 </tr>
                 ${props.etat_site === "TOF" ? `
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Nb rejets</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Nb rejets</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">${props.nombre_rejets ?? "—"}</td>
                 </tr>` : ""}
               </table>

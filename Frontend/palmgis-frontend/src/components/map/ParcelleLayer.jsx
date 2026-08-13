@@ -2,11 +2,12 @@ import { useEffect } from "react";
 import maplibregl from "maplibre-gl";
 import { getParcelles } from "../../api/parcelles";
 import useMapStore from "../../store/mapStore";
+import { theme } from "../../styles/theme";
 
 const COULEURS_STATUT = {
-  active:     "#22c55e",
-  en_repos:   "#f97316",
-  abandonnee: "#6b7280",
+  active:     theme.colors.success,
+  en_repos:   theme.colors.warning,
+  abandonnee: theme.colors.textMuted,
 };
 
 export default function ParcelleLayer({ map }) {
@@ -120,38 +121,43 @@ export default function ParcelleLayer({ map }) {
           const coords = e.lngLat;
 
           const typeLabel = {
-            ferme:    "🏡 Ferme",
-            zone:     "📍 Zone",
-            parcelle: "🌿 Parcelle",
-          }[props.type_parcelle] || "🌿 Parcelle";
+            ferme:    "Ferme",
+            zone:     "Zone",
+            parcelle: "Parcelle",
+          }[props.type_parcelle] || "Parcelle";
 
           const statutLabel = {
-            active:     "✅ Active",
-            en_repos:   "⏸️ En repos",
-            abandonnee: "❌ Abandonnée",
+            active:     "Active",
+            en_repos:   "En repos",
+            abandonnee: "Abandonnée",
           }[props.statut] || props.statut;
 
+          const statutCouleur = COULEURS_STATUT[props.statut] || theme.colors.textMuted;
+
           const html = `
-            <div style="font-family:system-ui,sans-serif;min-width:180px;padding:4px;">
-              <div style="background:#2E5E3E;color:white;padding:8px 12px;
+            <div style="font-family:${theme.font.family};min-width:180px;padding:4px;">
+              <div style="background:${theme.colors.primary};color:white;padding:8px 12px;
                 margin:-12px -12px 10px -12px;border-radius:6px 6px 0 0;
-                font-weight:bold;font-size:14px;">
+                font-weight:600;font-size:14px;">
                 ${typeLabel} — ${props.nom}
               </div>
               <table style="width:100%;font-size:13px;border-collapse:collapse;">
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Statut</td>
-                  <td style="font-weight:600;padding:3px 0 3px 8px;">${statutLabel}</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Statut</td>
+                  <td style="font-weight:600;padding:3px 0 3px 8px;">
+                    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;
+                      background:${statutCouleur};margin-right:5px;"></span>${statutLabel}
+                  </td>
                 </tr>
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Superficie</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Superficie</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">
                     ${props.superficie_ha ?? "—"} ha
                   </td>
                 </tr>
                 ${props.proprietaire ? `
                 <tr>
-                  <td style="color:#6b7280;padding:3px 0;">Propriétaire</td>
+                  <td style="color:${theme.colors.textSecondary};padding:3px 0;">Propriétaire</td>
                   <td style="font-weight:600;padding:3px 0 3px 8px;">${props.proprietaire}</td>
                 </tr>` : ""}
               </table>
