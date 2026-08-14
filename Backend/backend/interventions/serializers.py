@@ -41,8 +41,15 @@ class InterventionSerializer(serializers.ModelSerializer):
             "parcelle", "parcelle_nom", "palm", "palm_code",
             "date_intervention", "quantite", "operateur", "operateur_username",
             "description", "est_dans_periode_recommandee",
-            "created_at", "updated_at",
+            "created_at", "updated_at","notification_debut",
+            "notification_fin",
+            "notification_message"
         ]
+        extra_kwargs = {
+            "notification_debut":   {"required": False, "allow_null": True},
+            "notification_fin":     {"required": False, "allow_null": True},
+            "notification_message": {"required": False, "allow_blank": True},
+        }
         # parcelle reste modifiable : contrairement à Palm.parcelle (toujours
         # déduite de la géométrie), Intervention.parcelle n'est auto-remplie
         # dans save() que si un palm est fourni sans parcelle explicite. Pour

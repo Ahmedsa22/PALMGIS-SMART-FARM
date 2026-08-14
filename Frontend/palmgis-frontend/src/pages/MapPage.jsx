@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   ChevronLeft, ChevronRight, Pencil, Plus, History, FileDown, Satellite,
-  Trash2, LandPlot, TreePalm,
+  Trash2, LandPlot, TreePalm, Filter, X,
 } from "lucide-react";
 import Navbar from "../components/layout/Navbar";
 import MapContainer from "../components/map/MapContainer";
@@ -17,6 +17,7 @@ import PalmImport from "../components/palms/PalmImport";
 import ParcelleList from "../components/parcelles/ParcelleList";
 import CarteForm from "../components/reports/CarteForm";
 import RemoteSensingPanel from "../components/remotesensing/RemoteSensingPanel";
+import MapFilters from "../components/map/MapFilters";
 import { deleteParcelle } from "../api/parcelles";
 import { deletePalm }     from "../api/palms";
 import { theme } from "../styles/theme";
@@ -26,25 +27,20 @@ import { SectionTitle, AttributeRow, TypeBadge } from "../components/ui/Badge";
 export default function MapPage() {
   const sidebarOuverte = useMapStore((state) => state.sidebarOuverte);
   const [legendeVisible, setLegendeVisible] = useState(true);
+  const [showFilters, setShowFilters]       = useState(false);
 
+  // États du mode dessin (remontent ici depuis DrawingToolbox)
+  const [drawMode, setDrawMode] = useState(null); // "parcelle" | "palm" | null
 
   return (
     <div style={{
-      display: "flex",
-      flexDirection: "column",
-      width: "100%",
-      height: "100%",
+      display: "flex", flexDirection: "column",
+      width: "100%", height: "100%",
       fontFamily: theme.font.family,
     }}>
-
       <Navbar />
 
-      <div style={{
-        display: "flex",
-        flex: 1,
-        minHeight: 0,
-        overflow: "hidden",
-      }}>
+      <div style={{ display: "flex", flex: 1, minHeight: 0, overflow: "hidden" }}>
 
         {/* Sidebar */}
         <aside style={{
@@ -60,41 +56,110 @@ export default function MapPage() {
           <SidebarContent />
         </aside>
 
-        {/* Zone carte — prend tout l'espace restant */}
-        <main style={{
-          flex: 1,
-          position: "relative",
-          minHeight: 0,
-          minWidth: 0,
-        }}>
-          <MapContainer />
+        {/* Zone carte */}
+        <main style={{ flex: 1, position: "relative", minHeight: 0, minWidth: 0 }}>
+          <MapContainer drawMode={drawMode} setDrawMode={setDrawMode} />
 
-          {/* Bouton flottant pour toggle légende */}
+          {/* ── Barre du haut : Filtres + Outils dessin ── */}
+          <div style={{
+            position: "absolute", top: "1rem", left: "1rem",
+            display: "flex", alignItems: "center", gap: 6, zIndex: 10,
+          }}>
+            {/* Bouton Filtres */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "7px 12px", borderRadius: theme.radius.md,
+                border: `1px solid ${showFilters ? theme.colors.primary : theme.colors.border}`,
+                backgroundColor: showFilters ? theme.colors.primary : theme.colors.surface,
+                color: showFilters ? "white" : theme.colors.textSecondary,
+                cursor: "pointer", fontSize: theme.font.size.sm, fontWeight: 500,
+                boxShadow: theme.shadow.sm,
+              }}
+            >
+              <Filter size={14} />
+              Filtres
+            </button>
+
+            {/* Séparateur */}
+            <div style={{ width: 1, height: 24, backgroundColor: theme.colors.border }} />
+
+            {/* Bouton Nouvelle parcelle */}
+            <button
+              onClick={() => setDrawMode(drawMode === "parcelle" ? null : "parcelle")}
+              title={drawMode === "parcelle" ? "Annuler le dessin" : "Dessiner une parcelle"}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "7px 12px", borderRadius: theme.radius.md,
+                border: `1px solid ${drawMode === "parcelle"
+                  ? theme.colors.primary : theme.colors.border}`,
+                backgroundColor: drawMode === "parcelle"
+                  ? theme.colors.primary : theme.colors.surface,
+                color: drawMode === "parcelle" ? "white" : theme.colors.textSecondary,
+                cursor: "pointer", fontSize: theme.font.size.sm, fontWeight: 500,
+                boxShadow: theme.shadow.sm,
+              }}
+            >
+              {drawMode === "parcelle" ? <X size={14} /> : <LandPlot size={14} />}
+              {drawMode === "parcelle" ? "Annuler" : "Parcelle"}
+            </button>
+
+            {/* Bouton Nouveau palmier */}
+            <button
+              onClick={() => setDrawMode(drawMode === "palm" ? null : "palm")}
+              title={drawMode === "palm" ? "Annuler le dessin" : "Ajouter un palmier"}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "7px 12px", borderRadius: theme.radius.md,
+                border: `1px solid ${drawMode === "palm"
+                  ? theme.colors.accent : theme.colors.border}`,
+                backgroundColor: drawMode === "palm"
+                  ? theme.colors.accent : theme.colors.surface,
+                color: drawMode === "palm" ? "white" : theme.colors.textSecondary,
+                cursor: "pointer", fontSize: theme.font.size.sm, fontWeight: 500,
+                boxShadow: theme.shadow.sm,
+              }}
+            >
+              {drawMode === "palm" ? <X size={14} /> : <TreePalm size={14} />}
+              {drawMode === "palm" ? "Annuler" : "Palmier"}
+            </button>
+          </div>
+
+          {/* Panel Filtres */}
+          {showFilters && (
+            <div style={{
+              position: "absolute", top: "3.5rem", left: "1rem", zIndex: 10,
+            }}>
+              <MapFilters />
+            </div>
+          )}
+
+          {/* Toggle légende */}
           <button
             onClick={() => setLegendeVisible(!legendeVisible)}
             style={{
-              position: "absolute",
-              bottom: "2rem",
+              position: "absolute", bottom: "2rem",
               right: legendeVisible ? "185px" : "0.75rem",
               display: "flex", alignItems: "center", gap: 4,
               backgroundColor: theme.colors.surface,
               border: `1px solid ${theme.colors.border}`,
               borderRadius: theme.radius.md,
-              padding: "6px 8px",
-              cursor: "pointer",
-              zIndex: 11,
-              fontSize: theme.font.size.xs,
-              fontWeight: 600,
+              padding: "6px 8px", cursor: "pointer", zIndex: 11,
+              fontSize: theme.font.size.xs, fontWeight: 600,
               color: theme.colors.textSecondary,
               boxShadow: theme.shadow.sm,
               transition: "right 0.3s ease",
             }}
           >
-            {legendeVisible ? <><ChevronLeft size={14} /> Légende</> : <ChevronRight size={14} />}
+            {legendeVisible
+              ? <><ChevronLeft size={14} /> Légende</>
+              : <ChevronRight size={14} />
+            }
           </button>
+
           <MapLegend visible={legendeVisible} />
         </main>
-
       </div>
     </div>
   );
@@ -119,7 +184,7 @@ const SANTE_COLORS = {
   MR: theme.colors.santeMort,
 };
 
-function BackButton({ onClick }) {
+function BackButton({ onClick, label = "Retour aux parcelles" }) {
   return (
     <button
       onClick={onClick}
@@ -131,32 +196,25 @@ function BackButton({ onClick }) {
         padding: "4px 0", fontWeight: 600,
       }}
     >
-      <ChevronLeft size={14} /> Retour aux parcelles
+      <ChevronLeft size={14} /> {label}
     </button>
   );
 }
 
 function SidebarContent() {
-  const parcelleSelectionnee = useMapStore(
-    (state) => state.parcelleSelectionnee
-  );
-  const palmSelectionne = useMapStore(
-    (state) => state.palmSelectionne
-  );
-  const user = useAuthStore((state) => state.user);
+  const parcelleSelectionnee = useMapStore((state) => state.parcelleSelectionnee);
+  const palmSelectionne      = useMapStore((state) => state.palmSelectionne);
+  const user                 = useAuthStore((state) => state.user);
 
-  const [showForm, setShowForm] = useState(false);
-  const [showHistorique, setShowHistorique] = useState(false);
-  const [showImport, setShowImport] = useState(false);
+  const [showForm, setShowForm]               = useState(false);
+  const [showHistorique, setShowHistorique]   = useState(false);
+  const [showImport, setShowImport]           = useState(false);
   const [showEditParcelle, setShowEditParcelle] = useState(false);
-  const [showEditPalm, setShowEditPalm]         = useState(false);
+  const [showEditPalm, setShowEditPalm]       = useState(false);
   const [showImportPalms, setShowImportPalms] = useState(false);
-  const [showCarteForm, setShowCarteForm] = useState(false);
+  const [showCarteForm, setShowCarteForm]     = useState(false);
   const [showRemoteSensing, setShowRemoteSensing] = useState(false);
 
-
-
-  // Reset formulaire quand on change de sélection
   useEffect(() => {
     setShowForm(false);
     setShowHistorique(false);
@@ -166,72 +224,47 @@ function SidebarContent() {
     setShowImportPalms(false);
     setShowCarteForm(false);
     setShowRemoteSensing(false);
-
-
   }, [parcelleSelectionnee, palmSelectionne]);
 
-
-
-  // ─── Import des parcelles ───
   if (showImport) {
-  return (
-    <ParcelleImport
-      onSuccess={() => {
-        setShowImport(false);
-        window.location.reload(); // recharge la carte après import
-      }}
-      onCancel={() => setShowImport(false)}
-    />
-  );
-}
+    return (
+      <ParcelleImport
+        onSuccess={() => { setShowImport(false); window.location.reload(); }}
+        onCancel={() => setShowImport(false)}
+      />
+    );
+  }
 
-
-  //
   if (showImportPalms) {
-  return (
-    <PalmImport
-      onSuccess={() => {
-        setShowImportPalms(false);
-        window.location.reload();
-      }}
-      onCancel={() => setShowImportPalms(false)}
-    />
-  );
-}
+    return (
+      <PalmImport
+        onSuccess={() => { setShowImportPalms(false); window.location.reload(); }}
+        onCancel={() => setShowImportPalms(false)}
+      />
+    );
+  }
 
-  // ── Formulaire édition parcelle ──
   if (showEditParcelle) {
     return (
       <ParcelleEditForm
         parcelle={parcelleSelectionnee}
-        onSuccess={() => {
-          setShowEditParcelle(false);
-          window.location.reload(); // recharge la carte
-        }}
+        onSuccess={() => { setShowEditParcelle(false); window.location.reload(); }}
         onCancel={() => setShowEditParcelle(false)}
       />
     );
   }
 
-  // ── Formulaire édition palmier ──
   if (showEditPalm) {
     return (
       <PalmEditForm
         palm={palmSelectionne}
-        onSuccess={() => {
-          setShowEditPalm(false);
-          window.location.reload(); // recharge la carte
-        }}
+        onSuccess={() => { setShowEditPalm(false); window.location.reload(); }}
         onCancel={() => setShowEditPalm(false)}
       />
     );
   }
 
-
-
-
-
- if (showCarteForm) {
+  if (showCarteForm) {
     return (
       <CarteForm
         parcelle={parcelleSelectionnee}
@@ -240,8 +273,6 @@ function SidebarContent() {
     );
   }
 
-
-  // ─── Formulaire d'intervention ───
   if (showForm) {
     return (
       <InterventionForm
@@ -253,7 +284,6 @@ function SidebarContent() {
     );
   }
 
-  // ─── Historique des interventions ───
   if (showHistorique) {
     return (
       <InterventionList
@@ -264,36 +294,26 @@ function SidebarContent() {
     );
   }
 
-  // ─── Vue 4 — Remote Sensing ───
-
   if (showRemoteSensing) {
-  return (
-    <RemoteSensingPanel
-      parcelle={parcelleSelectionnee}
-      onCancel={() => setShowRemoteSensing(false)}
-    />
-  );
-}
-  // ─── Vue 3 — Palmier sélectionné ───
+    return (
+      <RemoteSensingPanel
+        parcelle={parcelleSelectionnee}
+        onCancel={() => setShowRemoteSensing(false)}
+      />
+    );
+  }
+
+  // ── Vue palmier ──
   if (palmSelectionne) {
     const p = palmSelectionne.properties;
-
     const etatSante = SANTE_LABELS[p.etat_sante] || p.etat_sante;
-
-    const etatSite = {
-      ISO: "Isolé", TOF: "Touffes", V: "Vide"
-    }[p.etat_site] || p.etat_site;
-
-    const age = {
-      JP: "Jeune", A: "Adulte", V: "Vieux"
-    }[p.age] || p.age;
+    const etatSite  = { ISO: "Isolé", TOF: "Touffes", V: "Vide" }[p.etat_site] || p.etat_site;
+    const age       = { JP: "Jeune", A: "Adulte", V: "Vieux" }[p.age] || p.age;
 
     return (
       <div style={{ padding: 16 }}>
-
         <BackButton onClick={() => useMapStore.getState().reinitialiserSelection()} />
 
-        {/* En-tête */}
         <SectionTitle style={{ marginBottom: 4 }}>Palmier</SectionTitle>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
           <h2 style={{
@@ -302,17 +322,17 @@ function SidebarContent() {
           }}>
             <TreePalm size={16} color={theme.colors.primary} /> {p.code_uni}
           </h2>
-          <TypeBadge label={etatSante} color={SANTE_COLORS[p.etat_sante] || theme.colors.textMuted} />
+          <TypeBadge label={etatSante}
+            color={SANTE_COLORS[p.etat_sante] || theme.colors.textMuted} />
         </div>
 
-        {/* Infos */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           {[
             { label: "Code local",     value: p.code_local || "—" },
             { label: "Ligne / N°",     value: `${p.ligne} / ${p.numero}` },
             { label: "Variété",        value: p.variete || "Non renseignée" },
-            { label: "Sexe",           value: p.sexe === "M" ? "Mâle" : "Femelle" },
-            { label: "Âge",            value: age },
+            { label: "Sexe",           value: p.sexe === "M" ? "Mâle" : p.sexe === "F" ? "Femelle" : "—" },
+            { label: "Âge",            value: age || "—" },
             { label: "État sanitaire", value: etatSante },
             { label: "État site",      value: etatSite },
             ...(p.etat_site === "TOF"
@@ -324,32 +344,27 @@ function SidebarContent() {
           ))}
         </div>
 
-        {/* Boutons — managers seulement */}
         {user?.role === "manager" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
             <Button variant="secondary" icon={Pencil} onClick={() => setShowEditPalm(true)}>
               Modifier le palmier
             </Button>
-
             <Button variant="primary" icon={Plus} onClick={() => setShowForm(true)}>
               Nouvelle intervention
             </Button>
-
             <Button variant="secondary" icon={History} onClick={() => setShowHistorique(true)}>
               Historique interventions
             </Button>
-
             <Button
-              variant="danger"
-              icon={Trash2}
+              variant="danger" icon={Trash2}
               onClick={async () => {
-                const code = palmSelectionne.properties?.code_uni || "ce palmier";
+                const code = p.code_uni || "ce palmier";
                 if (!window.confirm(`Supprimer le palmier "${code}" ?`)) return;
                 try {
-                  await deletePalm(palmSelectionne.properties?.id || palmSelectionne.id);
+                  await deletePalm(p.id || palmSelectionne.id);
                   useMapStore.getState().selectionnerParcelle(parcelleSelectionnee);
                   window.location.reload();
-                } catch (err) {
+                } catch {
                   alert("Erreur lors de la suppression.");
                 }
               }}
@@ -362,18 +377,15 @@ function SidebarContent() {
     );
   }
 
-  // ─── Vue 2 — Parcelle sélectionnée ───
+  // ── Vue parcelle ──
   if (parcelleSelectionnee) {
     const p = parcelleSelectionnee.properties;
-
     const statutLabel = STATUT_LABELS[p.statut] || p.statut;
 
     return (
       <div style={{ padding: 16 }}>
-
         <BackButton onClick={() => useMapStore.getState().reinitialiserSelection()} />
 
-        {/* En-tête */}
         <SectionTitle style={{ marginBottom: 4 }}>Parcelle</SectionTitle>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
           <h2 style={{
@@ -382,10 +394,10 @@ function SidebarContent() {
           }}>
             <LandPlot size={16} color={theme.colors.primary} /> {p.nom}
           </h2>
-          <TypeBadge label={statutLabel} color={STATUT_COLORS[p.statut] || theme.colors.textMuted} />
+          <TypeBadge label={statutLabel}
+            color={STATUT_COLORS[p.statut] || theme.colors.textMuted} />
         </div>
 
-        {/* Infos */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           {[
             { label: "Statut",       value: statutLabel },
@@ -397,7 +409,6 @@ function SidebarContent() {
           ))}
         </div>
 
-        {/* Boutons — managers seulement */}
         {user?.role === "manager" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
             <Button variant="secondary" icon={Pencil} onClick={() => setShowEditParcelle(true)}>
@@ -416,8 +427,7 @@ function SidebarContent() {
               Indices spectraux
             </Button>
             <Button
-              variant="danger"
-              icon={Trash2}
+              variant="danger" icon={Trash2}
               onClick={async () => {
                 const parcelleId = p.id || parcelleSelectionnee?.id;
                 if (!window.confirm(`Supprimer la parcelle "${p.nom}" et tous ses palmiers ?`)) return;
@@ -426,8 +436,8 @@ function SidebarContent() {
                   useMapStore.getState().reinitialiserSelection();
                   window.location.reload();
                 } catch (err) {
+                  console.error(err);
                   alert("Erreur lors de la suppression.");
-                  console.log(err)
                 }
               }}
             >
@@ -439,14 +449,11 @@ function SidebarContent() {
     );
   }
 
-
-
-
-  // ─── Vue 1 — Rien de sélectionné ───
-return (
-   <ParcelleList
-    onShowImport={() => setShowImport(true)}
-    onShowImportPalms={() => setShowImportPalms(true)}
-  />
-);
+  // ── Vue liste ──
+  return (
+    <ParcelleList
+      onShowImport={() => setShowImport(true)}
+      onShowImportPalms={() => setShowImportPalms(true)}
+    />
+  );
 }

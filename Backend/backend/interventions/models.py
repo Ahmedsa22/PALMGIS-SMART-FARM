@@ -71,6 +71,11 @@ class Intervention(BaseModel):
     )
     description = models.TextField(blank=True)
 
+    # ── Période de notification ──
+    notification_debut   = models.DateField(null=True, blank=True)
+    notification_fin     = models.DateField(null=True, blank=True)
+    notification_message = models.TextField(blank=True)
+
     class Meta:
         ordering = ["-date_intervention"]
 

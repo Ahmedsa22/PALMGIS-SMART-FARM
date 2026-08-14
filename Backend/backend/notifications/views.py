@@ -15,9 +15,11 @@ from .services import generer_notifications
 
 
 class RegleNotificationViewSet(viewsets.ModelViewSet):
-    queryset = RegleNotification.objects.select_related("type_intervention", "parcelle")
+    queryset = RegleNotification.objects.select_related(
+        "type_intervention", "parcelle"
+    )
     serializer_class = RegleNotificationSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends  = [DjangoFilterBackend]
     filterset_fields = ["actif", "parcelle"]
 
 
@@ -26,12 +28,17 @@ class NotificationViewSet(viewsets.ModelViewSet):
         "regle__type_intervention", "parcelle", "palm"
     )
     serializer_class = NotificationSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends  = [DjangoFilterBackend]
     filterset_fields = ["statut", "priorite", "parcelle", "date_echeance"]
 
     def perform_update(self, serializer):
-        nouveau_statut = serializer.validated_data.get("statut", serializer.instance.statut)
-        if nouveau_statut == Notification.Statut.TRAITEE and not serializer.instance.date_traitement:
+        nouveau_statut = serializer.validated_data.get(
+            "statut", serializer.instance.statut
+        )
+        if (
+            nouveau_statut == Notification.Statut.TRAITEE and
+            not serializer.instance.date_traitement
+        ):
             serializer.save(date_traitement=timezone.now())
         else:
             serializer.save()
@@ -54,24 +61,19 @@ class NotificationViewSet(viewsets.ModelViewSet):
             created_by=request.user,
         )
 
-        notification.statut = Notification.Statut.TRAITEE
-        notification.date_traitement = timezone.now()
+        notification.statut            = Notification.Statut.TRAITEE
+        notification.date_traitement   = timezone.now()
         notification.intervention_creee = intervention
         notification.save()
 
-        return Response(
-            {
-                "notification": NotificationSerializer(notification).data,
-                "intervention": InterventionSerializer(intervention).data,
-            }
-        )
+        return Response({
+            "notification": NotificationSerializer(notification).data,
+            "intervention": InterventionSerializer(intervention).data,
+        })
 
     @action(detail=False, methods=["post"], url_path="generer")
     def generer(self, request):
-        # Réservé aux managers : couvert par IsManagerOrReadOnly en
-        # DEFAULT_PERMISSION_CLASSES (POST n'est pas une méthode "safe"),
-        # pas besoin de redéclarer permission_classes ici.
         parcelle_id = request.data.get("parcelle")
-        parcelle = get_object_or_404(Parcelle, pk=parcelle_id) if parcelle_id else None
-        resultat = generer_notifications(parcelle=parcelle)
+        parcelle    = get_object_or_404(Parcelle, pk=parcelle_id) if parcelle_id else None
+        resultat    = generer_notifications(parcelle=parcelle)
         return Response(resultat)

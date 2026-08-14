@@ -1,42 +1,48 @@
 from rest_framework import serializers
-
 from .models import Notification, RegleNotification
 
 
 class RegleNotificationSerializer(serializers.ModelSerializer):
+    type_intervention_nom = serializers.CharField(
+        source="type_intervention.nom", read_only=True
+    )
+    parcelle_nom = serializers.CharField(
+        source="parcelle.nom", read_only=True
+    )
 
     class Meta:
-        model = RegleNotification
+        model  = RegleNotification
         fields = [
-            "id", "nom", "type_intervention", "parcelle", "delai_jours",
-            "actif", "created_at", "updated_at",
+            "id", "nom", "type_intervention", "type_intervention_nom",
+            "parcelle", "parcelle_nom", "delai_jours", "actif",
         ]
-        read_only_fields = ["created_at", "updated_at"]
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    parcelle_nom = serializers.CharField(source="parcelle.nom", read_only=True)
-    type_intervention_nom = serializers.CharField(
+    regle_nom    = serializers.CharField(source="regle.nom",     read_only=True)
+    parcelle_nom = serializers.CharField(source="parcelle.nom",  read_only=True)
+    type_nom     = serializers.CharField(
         source="regle.type_intervention.nom", read_only=True
     )
-    priorite_display = serializers.CharField(
-        source="get_priorite_display", read_only=True
-    )
-    statut_display = serializers.CharField(source="get_statut_display", read_only=True)
     est_en_retard = serializers.BooleanField(read_only=True)
 
     class Meta:
-        model = Notification
+        model  = Notification
         fields = [
-            "id", "regle", "parcelle", "parcelle_nom", "palm",
-            "type_intervention_nom", "statut", "statut_display",
-            "priorite", "priorite_display", "date_echeance", "date_traitement",
-            "intervention_creee", "message", "est_en_retard",
-            "created_at", "updated_at",
+            "id",
+            "regle", "regle_nom", "type_nom",
+            "parcelle", "parcelle_nom",
+            "palm",
+            "statut", "priorite",
+            "date_echeance",
+            "date_debut", "date_fin",      # ← nouveaux
+            "date_traitement",
+            "message",
+            "intervention_creee",
+            "est_en_retard",
+            "created_at",
         ]
-        # date_traitement et intervention_creee sont renseignés
-        # automatiquement (voir NotificationViewSet.perform_update et
-        # l'action "traiter"), jamais saisis directement par l'utilisateur.
-        read_only_fields = [
-            "date_traitement", "intervention_creee", "created_at", "updated_at",
-        ]
+        extra_kwargs = {
+            "date_debut": {"required": False, "allow_null": True},
+            "date_fin":   {"required": False, "allow_null": True},
+        }

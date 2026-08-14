@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wrench, ChevronLeft, X, Trash2, Inbox, CheckCircle2, AlertTriangle } from "lucide-react";
 import {
-  getInterventions,
-  getTypesIntervention,
-  deleteIntervention,
+  Wrench, ChevronLeft, X, Trash2, Inbox,
+  CheckCircle2, AlertTriangle, Plus,
+} from "lucide-react";
+import {
+  getInterventions, getTypesIntervention, deleteIntervention,
 } from "../api/interventions";
 import { getParcelles } from "../api/parcelles";
 import useAuthStore from "../store/authStore";
 import Navbar from "../components/layout/Navbar";
+import InterventionForm from "../components/interventions/InterventionForm";
 import { theme } from "../styles/theme";
 import Button from "../components/ui/Button";
 
@@ -22,14 +24,14 @@ export default function InterventionsPage() {
   const [types, setTypes]                 = useState([]);
   const [parcelles, setParcelles]         = useState([]);
   const [message, setMessage]             = useState(null);
+  const [showForm, setShowForm]           = useState(false);
 
   // Filtres
-  const [filtreType, setFiltreType]         = useState("");
-  const [filtreParcelle, setFiltreParcelle] = useState("");
+  const [filtreType, setFiltreType]           = useState("");
+  const [filtreParcelle, setFiltreParcelle]   = useState("");
   const [filtreDateDebut, setFiltreDateDebut] = useState("");
   const [filtreDateFin, setFiltreDateFin]     = useState("");
 
-  // Charge les données de référence au montage
   useEffect(() => {
     async function chargerRefs() {
       try {
@@ -40,7 +42,7 @@ export default function InterventionsPage() {
         setTypes(Array.isArray(dataTypes.results) ? dataTypes.results : dataTypes);
         const feats = dataParcelles?.features || [];
         setParcelles(feats.map(f => ({
-          id: f.properties.id || f.id,
+          id:  f.properties.id || f.id,
           nom: f.properties.nom,
         })));
       } catch (err) {
@@ -54,10 +56,10 @@ export default function InterventionsPage() {
     setIsLoading(true);
     try {
       const params = {};
-      if (filtreType)       params.type_intervention = filtreType;
-      if (filtreParcelle)   params.parcelle          = filtreParcelle;
-      if (filtreDateDebut)  params.date_intervention_after  = filtreDateDebut;
-      if (filtreDateFin)    params.date_intervention_before = filtreDateFin;
+      if (filtreType)      params.type_intervention           = filtreType;
+      if (filtreParcelle)  params.parcelle                    = filtreParcelle;
+      if (filtreDateDebut) params.date_intervention_after     = filtreDateDebut;
+      if (filtreDateFin)   params.date_intervention_before    = filtreDateFin;
 
       const data = await getInterventions(params);
       setCount(data.count || 0);
@@ -77,7 +79,7 @@ export default function InterventionsPage() {
       await deleteIntervention(id);
       setMessage({ type: "success", text: "Intervention supprimée" });
       charger();
-    } catch (err) {
+    } catch {
       setMessage({ type: "error", text: "Erreur lors de la suppression" });
     }
     setTimeout(() => setMessage(null), 3000);
@@ -99,8 +101,8 @@ export default function InterventionsPage() {
   };
 
   const columns = [
-    "Type", "Parcelle", "Palmier",
-    "Date", "Quantité", "Opérateur", "Description",
+    "Type", "Parcelle", "Palmier", "Date",
+    "Quantité", "Opérateur", "Description",
     user?.role === "manager" ? "Actions" : null,
   ].filter(Boolean);
 
@@ -130,9 +132,27 @@ export default function InterventionsPage() {
             {count} intervention(s) trouvée(s)
           </p>
         </div>
-        <Button variant="secondary" icon={ChevronLeft} fullWidth={false} onClick={() => navigate("/map")}>
-          Carte
-        </Button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {/* Bouton Nouvelle intervention — managers seulement */}
+          {user?.role === "manager" && (
+            <Button
+              variant="primary"
+              icon={Plus}
+              fullWidth={false}
+              onClick={() => setShowForm(true)}
+            >
+              Nouvelle intervention
+            </Button>
+          )}
+          <Button
+            variant="secondary"
+            icon={ChevronLeft}
+            fullWidth={false}
+            onClick={() => navigate("/map")}
+          >
+            Carte
+          </Button>
+        </div>
       </div>
 
       {/* Message flash */}
@@ -140,12 +160,15 @@ export default function InterventionsPage() {
         <div style={{
           display: "flex", alignItems: "center", gap: 6,
           backgroundColor: message.type === "success" ? "#F0FDF4" : "#FEF2F2",
-          borderLeft: `3px solid ${message.type === "success" ? theme.colors.success : theme.colors.danger}`,
+          borderLeft: `3px solid ${message.type === "success"
+            ? theme.colors.success : theme.colors.danger}`,
           color: message.type === "success" ? theme.colors.success : theme.colors.danger,
           padding: "10px 24px", fontSize: theme.font.size.sm,
           fontWeight: 500, flexShrink: 0,
         }}>
-          {message.type === "success" ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
+          {message.type === "success"
+            ? <CheckCircle2 size={14} />
+            : <AlertTriangle size={14} />}
           {message.text}
         </div>
       )}
@@ -157,13 +180,11 @@ export default function InterventionsPage() {
         display: "flex", gap: 12, flexWrap: "wrap",
         alignItems: "flex-end", flexShrink: 0,
       }}>
-
-        {/* Filtre type */}
         <div>
           <label style={filterLabelStyle}>Type</label>
           <select
             value={filtreType}
-            onChange={(e) => setFiltreType(e.target.value)}
+            onChange={e => setFiltreType(e.target.value)}
             style={{ ...filterInputStyle, minWidth: 150 }}
           >
             <option value="">Tous les types</option>
@@ -173,12 +194,11 @@ export default function InterventionsPage() {
           </select>
         </div>
 
-        {/* Filtre parcelle */}
         <div>
           <label style={filterLabelStyle}>Parcelle</label>
           <select
             value={filtreParcelle}
-            onChange={(e) => setFiltreParcelle(e.target.value)}
+            onChange={e => setFiltreParcelle(e.target.value)}
             style={{ ...filterInputStyle, minWidth: 130 }}
           >
             <option value="">Toutes</option>
@@ -188,41 +208,32 @@ export default function InterventionsPage() {
           </select>
         </div>
 
-        {/* Filtre date début */}
         <div>
           <label style={filterLabelStyle}>Du</label>
           <input
-            type="date"
-            value={filtreDateDebut}
-            onChange={(e) => setFiltreDateDebut(e.target.value)}
+            type="date" value={filtreDateDebut}
+            onChange={e => setFiltreDateDebut(e.target.value)}
             style={filterInputStyle}
           />
         </div>
 
-        {/* Filtre date fin */}
         <div>
           <label style={filterLabelStyle}>Au</label>
           <input
-            type="date"
-            value={filtreDateFin}
-            onChange={(e) => setFiltreDateFin(e.target.value)}
+            type="date" value={filtreDateFin}
+            onChange={e => setFiltreDateFin(e.target.value)}
             style={filterInputStyle}
           />
         </div>
 
-        {/* Bouton reset */}
         <Button variant="secondary" icon={X} fullWidth={false} onClick={resetFiltres}>
           Réinitialiser
         </Button>
       </div>
 
       {/* Contenu */}
-      <div style={{
-        flex: 1, overflowY: "auto",
-        padding: "16px 24px", minHeight: 0,
-      }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px 24px", minHeight: 0 }}>
 
-        {/* Chargement */}
         {isLoading && (
           <p style={{
             textAlign: "center", color: theme.colors.textMuted,
@@ -232,53 +243,45 @@ export default function InterventionsPage() {
           </p>
         )}
 
-        {/* Liste vide */}
         {!isLoading && interventions.length === 0 && (
           <div style={{ textAlign: "center", padding: "48px 0" }}>
             <Inbox size={40} color={theme.colors.textMuted} style={{ marginBottom: 12 }} />
             <p style={{ color: theme.colors.textMuted, fontSize: theme.font.size.base }}>
               Aucune intervention trouvée.
             </p>
-            <Button
-              variant="primary"
-              icon={ChevronLeft}
-              fullWidth={false}
-              onClick={() => navigate("/map")}
-              style={{ marginTop: 16 }}
-            >
-              Retour à la carte pour saisir une intervention
-            </Button>
+            {user?.role === "manager" && (
+              <Button
+                variant="primary" icon={Plus} fullWidth={false}
+                onClick={() => setShowForm(true)} style={{ marginTop: 16 }}
+              >
+                Créer une intervention
+              </Button>
+            )}
           </div>
         )}
 
-        {/* Tableau */}
         {!isLoading && interventions.length > 0 && (
           <div style={{
             overflowX: "auto", backgroundColor: theme.colors.surface,
-            border: `1px solid ${theme.colors.border}`, borderRadius: theme.radius.lg,
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.radius.lg,
           }}>
-            <table style={{
-              width: "100%", borderCollapse: "collapse",
-              fontSize: theme.font.size.sm,
-            }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: theme.font.size.sm }}>
               <thead>
                 <tr>
                   {columns.map(col => (
-                    <th key={col} style={thStyle}>
-                      {col}
-                    </th>
+                    <th key={col} style={thStyle}>{col}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {interventions.map((intervention) => (
+                {interventions.map(intervention => (
                   <tr
                     key={intervention.id}
                     style={{ borderBottom: `1px solid ${theme.colors.border}` }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = theme.colors.bg}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                   >
-                    {/* Type */}
                     <td style={tdStyle}>
                       <span style={{
                         display: "inline-flex", alignItems: "center", gap: 6,
@@ -288,29 +291,16 @@ export default function InterventionsPage() {
                           width: 6, height: 6, borderRadius: "50%",
                           backgroundColor: theme.colors.primary,
                         }} />
-                        {intervention.type_intervention_nom ||
-                         intervention.type_intervention}
+                        {intervention.type_intervention_nom || intervention.type_intervention}
                       </span>
                     </td>
-
-                    {/* Parcelle */}
                     <td style={tdStyle}>{intervention.parcelle_nom || "—"}</td>
-
-                    {/* Palmier */}
                     <td style={tdStyle}>{intervention.palm_code || "Toute la parcelle"}</td>
-
-                    {/* Date */}
                     <td style={{ ...tdStyle, color: theme.colors.textMuted, whiteSpace: "nowrap" }}>
                       {formatDate(intervention.date_intervention)}
                     </td>
-
-                    {/* Quantité */}
                     <td style={tdStyle}>{intervention.quantite ?? "—"}</td>
-
-                    {/* Opérateur */}
                     <td style={tdStyle}>{intervention.operateur_username || "—"}</td>
-
-                    {/* Description */}
                     <td style={{
                       ...tdStyle, color: theme.colors.textMuted,
                       maxWidth: 200, overflow: "hidden",
@@ -318,8 +308,6 @@ export default function InterventionsPage() {
                     }}>
                       {intervention.description || "—"}
                     </td>
-
-                    {/* Actions — managers seulement */}
                     {user?.role === "manager" && (
                       <td style={tdStyle}>
                         <button
@@ -337,6 +325,43 @@ export default function InterventionsPage() {
           </div>
         )}
       </div>
+
+      {/* Modal Nouvelle intervention */}
+      {showForm && (
+        <>
+          <div
+            onClick={() => setShowForm(false)}
+            style={{
+              position: "fixed", inset: 0,
+              backgroundColor: "rgba(0,0,0,0.4)", zIndex: 40,
+            }}
+          />
+          <div style={{
+            position: "fixed",
+            top: "50%", left: "50%",
+            transform: "translate(-50%, -50%)",
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.radius.lg,
+            boxShadow: theme.shadow.lg,
+            width: 480, maxHeight: "85vh",
+            overflowY: "auto", zIndex: 50,
+            border: `1px solid ${theme.colors.border}`,
+          }}>
+            <InterventionForm
+              parcelle={null}
+              palm={null}
+              parcelles={parcelles}
+              onSuccess={() => {
+                setShowForm(false);
+                setMessage({ type: "success", text: "Intervention créée avec succès" });
+                charger();
+                setTimeout(() => setMessage(null), 3000);
+              }}
+              onCancel={() => setShowForm(false)}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -345,31 +370,24 @@ const filterLabelStyle = {
   display: "block", fontSize: theme.font.size.xs,
   color: theme.colors.textSecondary, marginBottom: 4, fontWeight: 600,
 };
-
 const filterInputStyle = {
   padding: "8px 10px", borderRadius: theme.radius.md,
-  border: `1px solid ${theme.colors.borderStrong}`, fontSize: theme.font.size.sm,
-  backgroundColor: theme.colors.surface, outline: "none",
-  fontFamily: theme.font.family,
+  border: `1px solid ${theme.colors.borderStrong}`,
+  fontSize: theme.font.size.sm, backgroundColor: theme.colors.surface,
+  outline: "none", fontFamily: theme.font.family,
 };
-
 const thStyle = {
   padding: "10px 12px", textAlign: "left",
   fontSize: "11px", fontWeight: 600,
   color: theme.colors.textMuted, textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  borderBottom: `1px solid ${theme.colors.border}`,
+  letterSpacing: "0.5px", borderBottom: `1px solid ${theme.colors.border}`,
 };
-
-const tdStyle = {
-  padding: "10px 12px", color: theme.colors.text,
-};
-
+const tdStyle = { padding: "10px 12px", color: theme.colors.text };
 const deleteButtonStyle = {
   display: "flex", alignItems: "center", gap: 4,
   padding: "4px 8px", borderRadius: theme.radius.sm,
   backgroundColor: "transparent",
   border: `1px solid ${theme.colors.danger}`,
-  cursor: "pointer", fontSize: theme.font.size.xs, color: theme.colors.danger,
-  fontWeight: 600,
+  cursor: "pointer", fontSize: theme.font.size.xs,
+  color: theme.colors.danger, fontWeight: 600,
 };

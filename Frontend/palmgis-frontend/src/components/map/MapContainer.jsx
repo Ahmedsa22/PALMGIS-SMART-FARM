@@ -8,7 +8,7 @@ import MapLegend from "./MapLegend";
 import DrawingToolbox from "./DrawingToolbox";
 
 
-export default function MapContainer() {
+export default function MapContainer({ drawMode, setDrawMode }) {
   const mapContainerRef = useRef(null);
   const mapRef          = useRef(null);
   const setMapRef       = useMapStore((state) => state.setMapRef);
@@ -90,7 +90,8 @@ export default function MapContainer() {
         onFiltresChange={setFiltres}      
       />
       <MapLegend visible={true} />
-      <DrawingToolbox map={mapRef.current} />
+      <DrawingToolbox map={mapRef.current} drawMode={drawMode} setDrawMode={setDrawMode} />
+
   </>
   );
 }

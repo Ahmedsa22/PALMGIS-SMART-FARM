@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-
 from core.models import BaseModel
 
 
@@ -11,17 +10,14 @@ class RegleNotification(BaseModel):
         on_delete=models.CASCADE,
         related_name="regles",
     )
-    # Si parcelle est null, la règle est globale : elle s'applique à toutes
-    # les parcelles de la ferme.
     parcelle = models.ForeignKey(
         "parcels.Parcelle",
         on_delete=models.CASCADE,
         related_name="regles_notification",
-        null=True,
-        blank=True,
+        null=True, blank=True,
     )
     delai_jours = models.PositiveIntegerField()
-    actif = models.BooleanField(default=True)
+    actif       = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["type_intervention", "parcelle"]
@@ -33,14 +29,14 @@ class RegleNotification(BaseModel):
 class Notification(BaseModel):
     class Statut(models.TextChoices):
         EN_ATTENTE = "en_attente", "En attente"
-        TRAITEE = "traitee", "Traitée"
-        REPORTEE = "reportee", "Reportée"
-        IGNOREE = "ignoree", "Ignorée"
+        TRAITEE    = "traitee",    "Traitée"
+        REPORTEE   = "reportee",   "Reportée"
+        IGNOREE    = "ignoree",    "Ignorée"
 
     class Priorite(models.TextChoices):
-        HAUTE = "haute", "Haute"
+        HAUTE   = "haute",   "Haute"
         NORMALE = "normale", "Normale"
-        BASSE = "basse", "Basse"
+        BASSE   = "basse",   "Basse"
 
     regle = models.ForeignKey(
         RegleNotification,
@@ -56,25 +52,27 @@ class Notification(BaseModel):
         "palms.Palm",
         on_delete=models.SET_NULL,
         related_name="notifications",
-        null=True,
-        blank=True,
+        null=True, blank=True,
     )
-    statut = models.CharField(
+    statut    = models.CharField(
         max_length=20, choices=Statut.choices, default=Statut.EN_ATTENTE
     )
-    priorite = models.CharField(
+    priorite  = models.CharField(
         max_length=10, choices=Priorite.choices, default=Priorite.NORMALE
     )
-    date_echeance = models.DateField()
+    date_echeance   = models.DateField()
     date_traitement = models.DateTimeField(null=True, blank=True)
     intervention_creee = models.ForeignKey(
         "interventions.Intervention",
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        null=True, blank=True,
         related_name="notification_origine",
     )
     message = models.TextField(blank=True)
+
+    # ← Nouveaux champs pour la période de notification manuelle
+    date_debut = models.DateField(null=True, blank=True)
+    date_fin   = models.DateField(null=True, blank=True)
 
     class Meta:
         ordering = ["-date_echeance", "priorite"]
@@ -88,11 +86,7 @@ class Notification(BaseModel):
         super().save(*args, **kwargs)
 
     def _generer_message(self):
-        # Import local (comme Palm.save()) pour éviter tout risque de
-        # circularité au chargement du module : notifications dépend
-        # d'interventions, jamais l'inverse.
         from interventions.models import Intervention
-
         type_nom = self.regle.type_intervention.nom
         derniere = (
             Intervention.objects.filter(
@@ -115,4 +109,7 @@ class Notification(BaseModel):
 
     @property
     def est_en_retard(self):
-        return self.statut == self.Statut.EN_ATTENTE and self.date_echeance < timezone.now().date()
+        return (
+            self.statut == self.Statut.EN_ATTENTE and
+            self.date_echeance < timezone.now().date()
+        )
