@@ -86,6 +86,10 @@ class InterventionViewSet(viewsets.ModelViewSet):
             print(f"❌ Erreur génération notifications: {e}")
             print(traceback.format_exc())
 
+    def perform_update(self, serializer):
+        intervention = serializer.save()
+        self._generer_notifications(intervention)
+
 
 class PieceJointeViewSet(viewsets.ModelViewSet):
     queryset         = PieceJointe.objects.select_related("intervention")

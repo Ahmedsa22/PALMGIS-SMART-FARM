@@ -23,11 +23,15 @@ import { deletePalm }     from "../api/palms";
 import { theme } from "../styles/theme";
 import Button from "../components/ui/Button";
 import { SectionTitle, AttributeRow, TypeBadge } from "../components/ui/Badge";
+import PredictionPanel from "../components/predictions/PredictionPanel";
+import { TrendingUp } from "lucide-react";
+
 
 export default function MapPage() {
   const sidebarOuverte = useMapStore((state) => state.sidebarOuverte);
   const [legendeVisible, setLegendeVisible] = useState(true);
   const [showFilters, setShowFilters]       = useState(false);
+  
 
   // États du mode dessin (remontent ici depuis DrawingToolbox)
   const [drawMode, setDrawMode] = useState(null); // "parcelle" | "palm" | null
@@ -214,6 +218,7 @@ function SidebarContent() {
   const [showImportPalms, setShowImportPalms] = useState(false);
   const [showCarteForm, setShowCarteForm]     = useState(false);
   const [showRemoteSensing, setShowRemoteSensing] = useState(false);
+  const [showPrediction, setShowPrediction] = useState(false);
 
   useEffect(() => {
     setShowForm(false);
@@ -224,6 +229,7 @@ function SidebarContent() {
     setShowImportPalms(false);
     setShowCarteForm(false);
     setShowRemoteSensing(false);
+    setShowPrediction(false);
   }, [parcelleSelectionnee, palmSelectionne]);
 
   if (showImport) {
@@ -302,6 +308,15 @@ function SidebarContent() {
       />
     );
   }
+
+  if (showPrediction) {
+  return (
+    <PredictionPanel
+      parcelle={parcelleSelectionnee}
+      onCancel={() => setShowPrediction(false)}
+    />
+  );
+}
 
   // ── Vue palmier ──
   if (palmSelectionne) {
@@ -425,6 +440,13 @@ function SidebarContent() {
             </Button>
             <Button variant="secondary" icon={Satellite} onClick={() => setShowRemoteSensing(true)}>
               Indices spectraux
+            </Button>
+            <Button
+              variant="secondary"
+              icon={TrendingUp}
+              onClick={() => setShowPrediction(true)}
+            >
+              Prédiction & Recommandation
             </Button>
             <Button
               variant="danger" icon={Trash2}

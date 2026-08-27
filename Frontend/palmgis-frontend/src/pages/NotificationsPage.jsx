@@ -43,6 +43,19 @@ export default function NotificationsPage() {
     }
   }
 
+
+  useEffect(() => {
+    async function initialiser() {
+      try {
+        await genererNotifications();
+      } catch (err) {
+        console.error("Erreur génération auto:", err);
+      }
+      charger();
+    }
+    initialiser();
+  }, []); 
+
   useEffect(() => {
     charger();
   }, [filtreStatut]);
@@ -211,10 +224,16 @@ export default function NotificationsPage() {
               Aucune notification pour ce filtre.
             </p>
             {user?.role === "manager" && (
-              <Button variant="primary" icon={Zap} fullWidth={false} onClick={handleGenerer} style={{ marginTop: 16 }}>
-                Générer les rappels maintenant
-              </Button>
-            )}
+            <Button
+              variant="secondary"
+              icon={Zap}
+              fullWidth={false}
+              onClick={handleGenerer}
+              disabled={isGenerating}
+            >
+              {isGenerating ? "Actualisation..." : "Actualiser"}
+            </Button>
+          )}
           </div>
         )}
 

@@ -11,6 +11,7 @@ import { SectionTitle } from "../ui/Badge";
 
 export default function RemoteSensingPanel({ parcelle, onCancel }) {
   const p = parcelle.properties;
+  const parcelleId = parcelle?.properties?.id ?? parcelle?.id;
 
   const [onglet, setOnglet]           = useState("analyse");
   const [dateDebut, setDateDebut]     = useState("2024-01-01");
@@ -51,7 +52,7 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
     setSearchDone(false);
     try {
       const response = await api.post("/remote-sensing/rechercher/", {
-        parcelle_id: p.id,
+        parcelle_id: parcelleId,
         date_debut:  dateDebut,
         date_fin:    dateFin,
         nuage_max:   nuageMax,
@@ -74,7 +75,7 @@ export default function RemoteSensingPanel({ parcelle, onCancel }) {
 
     try {
       const response = await api.post("/remote-sensing/telecharger/", {
-        parcelle_id:      p.id,
+        parcelle_id:      parcelleId,
         produit_id:       image.id,
         date_acquisition: image.date,
         nuage_pct:        image.nuage,

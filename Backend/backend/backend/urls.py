@@ -38,7 +38,7 @@ urlpatterns = [
     path('api/', include('palms.urls')),
     path('api/', include('notifications.urls')),
     path("api/remote-sensing/", include("remote_sensing.urls")),   
-    # path('api/', include('ai_predictions.urls')),
+    path("api/ai/", include("ai_predictions.urls")),   
     path("api/reports/", include("reports_app.urls")),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

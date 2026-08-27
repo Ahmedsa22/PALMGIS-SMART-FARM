@@ -33,9 +33,13 @@ export default function ParcelleLayer({ map }) {
           ...geojson,
           features: geojson.features.map(f => ({
             ...f,
-            properties: { ...f.properties, id: f.properties.id ?? f.id },
-          })),
+            properties: {
+              ...f.properties,
+              id: f.properties.id ?? f.id,
+            }
+          }))
         };
+
 
         // Nettoie les couches existantes
         ["parcelles-selected", "parcelles-border", "parcelles-fill"].forEach(id => {

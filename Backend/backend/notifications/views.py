@@ -31,6 +31,23 @@ class NotificationViewSet(viewsets.ModelViewSet):
     filter_backends  = [DjangoFilterBackend]
     filterset_fields = ["statut", "priorite", "parcelle", "date_echeance"]
 
+    def list(self, request, *args, **kwargs):
+        """
+        Génère automatiquement les notifications avant de les retourner.
+        Appelé à chaque GET /api/notifications/
+        """
+        try:
+            parcelle_id = request.query_params.get("parcelle")
+            if parcelle_id:
+                parcelle = Parcelle.objects.get(id=parcelle_id)
+                generer_notifications(parcelle=parcelle)
+            else:
+                generer_notifications(parcelle=None)
+        except Exception as e:
+            print(f"⚠️ Génération auto notifications: {e}")
+
+        return super().list(request, *args, **kwargs)
+
     def perform_update(self, serializer):
         nouveau_statut = serializer.validated_data.get(
             "statut", serializer.instance.statut
@@ -61,8 +78,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
             created_by=request.user,
         )
 
-        notification.statut            = Notification.Statut.TRAITEE
-        notification.date_traitement   = timezone.now()
+        notification.statut             = Notification.Statut.TRAITEE
+        notification.date_traitement    = timezone.now()
         notification.intervention_creee = intervention
         notification.save()
 
@@ -73,6 +90,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="generer")
     def generer(self, request):
+        """Endpoint manuel pour forcer la régénération (managers)."""
         parcelle_id = request.data.get("parcelle")
         parcelle    = get_object_or_404(Parcelle, pk=parcelle_id) if parcelle_id else None
         resultat    = generer_notifications(parcelle=parcelle)
