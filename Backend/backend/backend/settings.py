@@ -15,7 +15,10 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-GDAL_LIBRARY_PATH = r"C:\Users\hp\miniconda3\envs\palmgis\Library\bin\gdal.dll"
+import os
+if os.name == 'nt':  # Windows uniquement
+    GDAL_LIBRARY_PATH = "C:/Users/hp/miniconda3/envs/palmgis/Library/bin/gdal.dll"
+    GEOS_LIBRARY_PATH = "C:/Users/hp/miniconda3/envs/palmgis/Library/bin/geos_c.dll"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

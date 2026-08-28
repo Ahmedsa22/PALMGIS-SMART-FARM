@@ -1,6 +1,5 @@
 FROM python:3.12-slim
 
-# Dépendances système — ajout de g++ pour compiler GDAL
 RUN apt-get update && apt-get install -y \
     gdal-bin \
     libgdal-dev \
@@ -19,10 +18,12 @@ WORKDIR /app
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 
-# Installe GDAL Python selon la version système
+# ← Force GDAL vers la librairie Linux
+ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
+ENV GEOS_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so.1
+
 RUN pip install --no-cache-dir GDAL==$(gdal-config --version)
 
-# Copie et installe les dépendances Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
