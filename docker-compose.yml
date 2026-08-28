@@ -1,0 +1,87 @@
+
+
+services:
+
+  # ── Base de données PostGIS ──
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: palmgis_db
+    environment:
+      POSTGRES_DB:       Palm_GIS
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Palm_GIS"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── GeoServer ──
+  geoserver:
+    image: kartoza/geoserver:2.23.0
+    container_name: palmgis_geoserver
+    environment:
+      GEOSERVER_ADMIN_USER:     admin
+      GEOSERVER_ADMIN_PASSWORD: ${GEOSERVER_PASSWORD}
+      INITIAL_MEMORY:           512m
+      MAXIMUM_MEMORY:           1536m
+    volumes:
+      - geoserver_data:/opt/geoserver/data_dir
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Backend Django ──
+  backend:
+    build:
+      context: ./Backend/backend
+      dockerfile: Dockerfile
+    container_name: palmgis_backend
+    env_file:
+      - .env
+    environment:
+      DEBUG:               "False"
+      ALLOWED_HOSTS:       "localhost,127.0.0.1,backend"
+      DB_NAME:             Palm_GIS
+      DB_USER:             postgres
+      DB_HOST:             db
+      DB_PORT:             5432
+      GEOSERVER_URL:       http://geoserver:8080/geoserver
+      GEOSERVER_WORKSPACE: palmgis
+      SENTINEL_DATA_DIR:   /sentinel_data
+    volumes:
+      - sentinel_data:/sentinel_data
+      - static_files:/app/staticfiles
+      - media_files:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "chmod +x /app/docker/init-db.sh &&
+             /app/docker/init-db.sh"
+
+  # ── Frontend React ──
+  frontend:
+    build:
+      context: ./Frontend/palmgis-frontend
+      dockerfile: Dockerfile
+    container_name: palmgis_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  geoserver_data:
+  sentinel_data:
+  static_files:
+  media_files:
