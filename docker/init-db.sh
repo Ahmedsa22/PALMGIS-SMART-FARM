@@ -9,13 +9,13 @@ done
 echo "✅ PostgreSQL prêt"
 
 # Vérifie si la base est déjà initialisée
-COUNT=$(psql -h db -U postgres -d Palm_GIS -tAc \
+COUNT=$(PGPASSWORD=$DB_PASSWORD psql -h db -U postgres -d Palm_GIS -tAc \
   "SELECT COUNT(*) FROM information_schema.tables \
    WHERE table_schema='public'" 2>/dev/null || echo "0")
 
 if [ "$COUNT" -lt "5" ]; then
   echo "📦 Restauration de la base de données..."
-  pg_restore \
+  PGPASSWORD=$DB_PASSWORD pg_restore \
     -h db \
     -U postgres \
     -d Palm_GIS \
