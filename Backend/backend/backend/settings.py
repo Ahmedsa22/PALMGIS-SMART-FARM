@@ -24,9 +24,12 @@ if os.name == 'nt':  # Windows uniquement
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 #load environment variables from .env file
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+# load_dotenv(os.path.join(BASE_DIR, '.env'))
 
-
+# Charge .env seulement en développement local (pas dans Docker)
+if os.getenv('DOCKER_ENV') != 'true':
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
