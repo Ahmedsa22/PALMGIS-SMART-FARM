@@ -153,11 +153,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE":   "django.contrib.gis.db.backends.postgis",
-        "NAME":     os.getenv("DB_NAME"),
-        "USER":     os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST":     os.getenv("DB_HOST",     "localhost"),  # ← Docker envoie "db"
-        "PORT":     os.getenv("DB_PORT",     "5432"),       # ← Docker envoie "5432"
+        "NAME":     os.getenv("DB_NAME",     "Palm_GIS"),
+        "USER":     os.getenv("DB_USER",     "postgres"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "geoinfo"),
+        "HOST":     os.getenv("DB_HOST",     "db"),      # ← "db" par défaut
+        "PORT":     os.getenv("DB_PORT",     "5432"),    # ← "5432" par défaut
     }
 }
 
