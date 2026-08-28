@@ -38,7 +38,7 @@ services:
         condition: service_healthy
 
   # ── Backend Django ──
-  backend:
+    backend:
     build:
       context: ./Backend/backend
       dockerfile: Dockerfile
@@ -46,20 +46,20 @@ services:
     env_file:
       - .env
     environment:
-    DOCKER_ENV:          "true"
-    SECRET_KEY:          ${SECRET_KEY}
-    DB_NAME:             Palm_GIS
-    DB_USER:             postgres
-    DB_PASSWORD:         ${DB_PASSWORD}
-    DB_HOST:             db
-    DB_PORT:             "5432"
-    DEBUG:               "False"
-    ALLOWED_HOSTS:       "localhost,127.0.0.1,backend"
-    GEOSERVER_URL:       http://geoserver:8080/geoserver
-    GEOSERVER_WORKSPACE: palmgis
-    SENTINEL_DATA_DIR:   /sentinel_data
-    COPERNICUS_USER:     ahmed.sabbar@etu.uae.ac.ma
-    COPERNICUS_PASSWORD: Geoinformation@2024
+      DOCKER_ENV: "true"
+      SECRET_KEY: "${SECRET_KEY}"
+      DB_NAME: "Palm_GIS"
+      DB_USER: "postgres"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DEBUG: "False"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,backend"
+      GEOSERVER_URL: "http://geoserver:8080/geoserver"
+      GEOSERVER_WORKSPACE: "palmgis"
+      SENTINEL_DATA_DIR: "/sentinel_data"
+      COPERNICUS_USER: "${COPERNICUS_USER}"
+      COPERNICUS_PASSWORD: "${COPERNICUS_PASSWORD}"
     volumes:
       - sentinel_data:/sentinel_data
       - static_files:/app/staticfiles
@@ -71,7 +71,7 @@ services:
         condition: service_healthy
     command: >
       sh -c "chmod +x /app/init-db.sh &&
-            /app/init-db.sh"
+             /app/init-db.sh"
 
   # ── Frontend React ──
   frontend:
