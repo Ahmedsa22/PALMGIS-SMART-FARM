@@ -1,5 +1,3 @@
-
-
 services:
 
   # ── Base de données PostGIS ──
@@ -7,9 +5,9 @@ services:
     image: postgis/postgis:15-3.3
     container_name: palmgis_db
     environment:
-      POSTGRES_DB:       Palm_GIS
-      POSTGRES_USER:     postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: Palm_GIS
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -25,10 +23,10 @@ services:
     image: kartoza/geoserver:2.23.0
     container_name: palmgis_geoserver
     environment:
-      GEOSERVER_ADMIN_USER:     admin
-      GEOSERVER_ADMIN_PASSWORD: ${GEOSERVER_PASSWORD}
-      INITIAL_MEMORY:           512m
-      MAXIMUM_MEMORY:           1536m
+      GEOSERVER_ADMIN_USER: admin
+      GEOSERVER_ADMIN_PASSWORD: "${GEOSERVER_PASSWORD}"
+      INITIAL_MEMORY: 512m
+      MAXIMUM_MEMORY: 1536m
     volumes:
       - geoserver_data:/opt/geoserver/data_dir
     ports:
@@ -38,7 +36,7 @@ services:
         condition: service_healthy
 
   # ── Backend Django ──
-    backend:
+  backend:
     build:
       context: ./Backend/backend
       dockerfile: Dockerfile
