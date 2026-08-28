@@ -1,6 +1,6 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
-# Dépendances système
+# Dépendances système — ajout de g++ pour compiler GDAL
 RUN apt-get update && apt-get install -y \
     gdal-bin \
     libgdal-dev \
@@ -9,13 +9,13 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     binutils \
     gcc \
+    g++ \
     python3-dev \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Variables GDAL — pointe vers la version installée par apt
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 
@@ -26,10 +26,8 @@ RUN pip install --no-cache-dir GDAL==$(gdal-config --version)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copie le code
 COPY . .
 
-# Collecte des fichiers statiques
 RUN python manage.py collectstatic --noinput || true
 
 EXPOSE 8000
