@@ -154,7 +154,7 @@ DATABASES = {
         "USER":     os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD", ""),
         "HOST":     os.getenv("DB_HOST",     "localhost"),  # ← Docker envoie "db"
-        "PORT":     os.getenv("DB_PORT",     "5432"),       # ← Docker envoie "5432"
+        "PORT":     "5432",       # ← Docker envoie "5432"
     }
 }
 
