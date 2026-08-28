@@ -67,9 +67,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: >
-      sh -c "chmod +x /app/init-db.sh &&
-             /app/init-db.sh"
 
   # ── Frontend React ──
   frontend:

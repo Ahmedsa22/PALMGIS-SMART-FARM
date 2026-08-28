@@ -17,10 +17,10 @@ WORKDIR /app
 
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
-
-# ← Force GDAL vers la librairie Linux
 ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
 ENV GEOS_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so.1
+ENV DOCKER_ENV=true
+ENV PYTHONUNBUFFERED=1
 
 RUN pip install --no-cache-dir GDAL==$(gdal-config --version)
 
@@ -29,11 +29,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN python manage.py collectstatic --noinput || true
+RUN rm -f .env
 
 EXPOSE 8000
 
-CMD ["gunicorn", "backend.wsgi:application", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "2", \
-     "--timeout", "120"]
+CMD ["/bin/bash", "/app/init-db.sh"]
