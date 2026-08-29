@@ -29,7 +29,7 @@ urlpatterns = [
     # Authentification (login/logout/refresh via cookies)
     path('api/auth/', include('dj_rest_auth.urls')),
 
-    path('api/auth/registration/', PalmGISRegisterView.as_view(), name='register'),
+    path('api/auth/registration/', PalmGISRegisterView.as_view(), name='rest_register'),
 
     path('api-auth/', include('rest_framework.urls')),  # login/logout pour Browsable API
 
