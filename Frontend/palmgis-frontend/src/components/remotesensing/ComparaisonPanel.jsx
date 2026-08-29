@@ -10,7 +10,7 @@ import { SectionTitle } from "../ui/Badge";
 
 export default function ComparaisonPanel({ parcelle, onCancel }) {
   const p = parcelle.properties;
-
+  const parcelleId = parcelle?.properties?.id ?? parcelle?.id;  // ← ajoute cette ligne
   const [historique, setHistorique]       = useState([]);
   const [image1, setImage1]               = useState("");
   const [image2, setImage2]               = useState("");
@@ -26,7 +26,7 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
     async function charger() {
       try {
         const resp = await api.get(
-          `/remote-sensing/historique/${p.id}/`
+          `/remote-sensing/historique/${parcelleId}/`  // ← parcelleId pas p.id
         );
         setHistorique(resp.data.images || []);
       } catch (err) {
@@ -36,7 +36,7 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
       }
     }
     charger();
-  }, [p.id]);
+  }, [parcelleId]);  // ← parcelleId pas p.id
 
   async function handleComparer(e) {
     e.preventDefault();
@@ -51,7 +51,7 @@ export default function ComparaisonPanel({ parcelle, onCancel }) {
 
     try {
       const resp = await api.post("/remote-sensing/comparer/", {
-        parcelle_id: p.id,
+        parcelle_id: parcelleId,
         image_id_1:  parseInt(image1),
         image_id_2:  parseInt(image2),
         indice,
