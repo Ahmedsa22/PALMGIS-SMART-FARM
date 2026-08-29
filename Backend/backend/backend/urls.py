@@ -20,13 +20,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from core.registration_view import PalmGISRegisterView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Authentification (login/logout/refresh via cookies)
     path('api/auth/', include('dj_rest_auth.urls')),
-    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),  
+
+    path('api/auth/registration/', PalmGISRegisterView.as_view(), name='custom_register'),
 
     path('api-auth/', include('rest_framework.urls')),  # login/logout pour Browsable API
 
