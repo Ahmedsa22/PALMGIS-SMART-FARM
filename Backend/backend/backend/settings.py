@@ -65,7 +65,8 @@ AUTH_USER_MODEL = "core.User"
 
 
 ACCOUNT_EMAIL_VERIFICATION = "none"    # ← pas de vérification email
-ACCOUNT_AUTHENTICATION_METHOD = "username"
+ACCOUNT_LOGIN_METHODS = {'username'}
+ACCOUNT_SIGNUP_FIELDS = ['email', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_REQUIRED = False
 
 # Configuration GeoServer
