@@ -59,6 +59,7 @@ services:
       COPERNICUS_USER: "${COPERNICUS_USER}"
       COPERNICUS_PASSWORD: "${COPERNICUS_PASSWORD}"
     volumes:
+      - C:/sentinel_data:/sentinel_data
       - sentinel_data:/sentinel_data
       - static_files:/app/staticfiles
       - media_files:/app/media
