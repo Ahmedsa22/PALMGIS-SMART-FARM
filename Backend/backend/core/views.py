@@ -100,3 +100,41 @@ class PromouvoirUtilisateurView(APIView):
             "role":      user.role,
             "is_active": user.is_active,
         })
+
+class SimpleRegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        email    = request.data.get('email')
+        password = request.data.get('password1') or request.data.get('password')
+
+        if not username or not password:
+            return Response(
+                {'error': 'username et password sont requis'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {'error': 'Ce nom utilisateur existe deja'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.create_user(
+                username=username,
+                email=email or '',
+                password=password,
+            )
+            user.role = 'viewer'
+            user.save()
+            return Response(
+                {'message': f'Utilisateur {username} cree avec succes'},
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
